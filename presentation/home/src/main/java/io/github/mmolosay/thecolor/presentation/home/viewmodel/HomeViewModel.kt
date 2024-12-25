@@ -120,7 +120,7 @@ class HomeViewModel @Inject constructor(
      */
     private var proceedExecutorFlow = MutableStateFlow<ProceedExecutor?>(null)
     private var colorCenterSession: ColorCenterSession? = null
-    private var orchestrator = Orchestrator()
+    private val orchestrator = Orchestrator()
     private var dataFetchedEventProcessor: DataFetchedEventProcessor? = initialDataFetchedEventProcessor()
 
     init {
