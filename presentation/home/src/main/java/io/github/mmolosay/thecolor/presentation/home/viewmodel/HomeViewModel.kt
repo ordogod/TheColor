@@ -493,9 +493,8 @@ private class Orchestrator {
         }
     }
 
-    suspend fun suspendUntilProceedIsAllowed() {
+    suspend fun suspendUntilProceedIsAllowed() =
         suspendUntilAllSentColorsAreProcessed()
-    }
 
     private suspend fun suspendUntilAllSentColorsAreProcessed() {
         val list = flowOfSentButNotYetProcessedColors.value
