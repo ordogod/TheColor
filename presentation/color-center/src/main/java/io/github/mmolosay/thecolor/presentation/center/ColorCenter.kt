@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +58,7 @@ fun ColorCenter(
         modifier = modifier,
         viewModel = viewModel,
         details = {
+            @Suppress("NAME_SHADOWING")
             val viewModel = viewModel.colorDetailsViewModel
             ColorDetailsCrossfade(
                 actualDataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value,
@@ -64,12 +68,15 @@ fun ColorCenter(
             }
         },
         scheme = {
+            @Suppress("NAME_SHADOWING")
             val viewModel = viewModel.colorSchemeViewModel
             val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
             val transition = updateTransition(
                 targetState = state,
                 label = "color scheme cross-fade",
             )
+            // there's no 'ColorSchemeCrossfade()' as for Color Details yet.
+            // unlike Color Details, Color Scheme is only used in one place, here.
             transition.Crossfade(
                 animationSpec = crossfadeSpec,
                 contentKey = { it::class }, // don't animate when 'DataState' type stays the same
@@ -92,9 +99,9 @@ fun ColorCenter(
     val context = LocalContext.current
     val strings = remember(context) { ColorCenterUiStrings(context) }
     val data = viewModel.dataFlow.collectAsStateWithLifecycle().value
-    val uiData = ColorCenterUiData(data, strings)
     ColorCenter(
-        uiData = uiData,
+        data = data,
+        strings = strings,
         colorDetails = details,
         colorScheme = scheme,
         modifier = modifier,
@@ -104,7 +111,8 @@ fun ColorCenter(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ColorCenter(
-    uiData: ColorCenterUiData,
+    data: ColorCenterData,
+    strings: ColorCenterUiStrings,
     colorDetails: @Composable () -> Unit,
     colorScheme: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -113,15 +121,29 @@ fun ColorCenter(
     val pages: ImmutableList<@Composable () -> Unit> = remember {
         persistentListOf(
             {
-                DetailsPage(
-                    uiData = uiData.detailsPage,
-                    colorDetails = colorDetails,
+                Page(
+                    content = colorDetails,
+                    changePageButton = {
+                        ChangePageButton(
+                            text = strings.detailsPageChangePageButtonText,
+                            onClick = { data.changePage(1) },
+                            icon = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                            iconPlacement = IconPlacement.Trailing,
+                        )
+                    },
                 )
             },
             {
-                SchemePage(
-                    uiData = uiData.schemePage,
-                    colorScheme = colorScheme,
+                Page(
+                    content = colorScheme,
+                    changePageButton = {
+                        ChangePageButton(
+                            text = strings.schemePageChangePageButtonText,
+                            onClick = { data.changePage(0) },
+                            icon = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                            iconPlacement = IconPlacement.Leading,
+                        )
+                    },
                 )
             },
         )
@@ -155,8 +177,8 @@ fun ColorCenter(
         }
     }
 
-    LaunchedEffect(uiData.changePageEvent) {
-        val event = uiData.changePageEvent ?: return@LaunchedEffect
+    LaunchedEffect(data.changePageEvent) {
+        val event = data.changePageEvent ?: return@LaunchedEffect
         userScrollEnabled = false
         pagerState.animateScrollToPage(page = event.destPage)
         event.onConsumed()
@@ -179,11 +201,9 @@ private fun Preview() {
         )
     TheColorTheme {
         ProvideColorsOnTintedSurface(colors = colorsOnLightSurface()) {
-            val data = previewData()
-            val strings = previewUiStrings()
-            val uiData = ColorCenterUiData(data, strings)
             ColorCenter(
-                uiData = uiData,
+                data = previewData(),
+                strings = previewUiStrings(),
                 colorDetails = {
                     Page("Color details")
                 },
