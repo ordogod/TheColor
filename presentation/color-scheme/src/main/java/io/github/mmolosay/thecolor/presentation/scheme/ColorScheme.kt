@@ -164,8 +164,8 @@ private fun Swatch(
     swatch: ColorSchemeData.Swatch,
     onClick: () -> Unit,
 ) {
-    val colors =
-        rememberContentColors(useLight = swatch.isDark) // light content on dark and vice versa
+    // TODO: ripple is barely visible for all 'ColorsOnTintedSurface'; make more prominent
+    val colors = rememberContentColors(useLight = swatch.isDark) // light content on dark and vice versa
     ProvideColorsOnTintedSurface(colors) { // provides correct ripple
         Box(
             modifier = Modifier
