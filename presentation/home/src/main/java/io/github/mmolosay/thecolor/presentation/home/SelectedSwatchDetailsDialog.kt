@@ -37,8 +37,6 @@ import io.github.mmolosay.thecolor.presentation.impl.onlyBottom
 import io.github.mmolosay.thecolor.presentation.impl.withoutBottom
 import io.github.mmolosay.thecolor.utils.doNothing
 
-// This piece of UI doesn't have its own "UI" model.
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SelectedSwatchDetailsDialog(
     viewModel: ColorDetailsViewModel,
