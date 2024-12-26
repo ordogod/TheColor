@@ -30,10 +30,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.input.impl.ColorInputViewModel.DataState
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHex
 import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHexData
+import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHexUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgb
 import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgbData
+import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgbUiStrings
 import io.github.mmolosay.thecolor.utils.doNothing
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
 
@@ -164,11 +167,13 @@ private fun Preview() {
             hexInput = {
                 ColorInputHex(
                     data = previewHexData(),
+                    strings = previewHexUiStrings(),
                 )
             },
             rgbInput = {
                 ColorInputRgb(
                     data = previewRgbData(),
+                    strings = previewRgbUiStrings(),
                 )
             },
         )
@@ -205,6 +210,16 @@ private fun previewHexData() =
         submitColor = {},
     )
 
+private fun previewHexUiStrings() =
+    ColorInputHexUiStrings(
+        textField = TextFieldUiStrings(
+            label = "HEX",
+            placeholder = "000000",
+            prefix = "#",
+            trailingIconContentDesc = "Clear text",
+        ),
+    )
+
 private fun previewRgbData() =
     ColorInputRgbData(
         rTextField = TextFieldData(
@@ -230,4 +245,26 @@ private fun previewRgbData() =
         ),
         submitColor = {},
         isSmartBackspaceEnabled = true,
+    )
+
+private fun previewRgbUiStrings() =
+    ColorInputRgbUiStrings(
+        rTextField = TextFieldUiStrings(
+            label = "R",
+            placeholder = "0",
+            prefix = null,
+            trailingIconContentDesc = null,
+        ),
+        gTextField = TextFieldUiStrings(
+            label = "G",
+            placeholder = "0",
+            prefix = null,
+            trailingIconContentDesc = null,
+        ),
+        bTextField = TextFieldUiStrings(
+            label = "B",
+            placeholder = "0",
+            prefix = null,
+            trailingIconContentDesc = null,
+        ),
     )
