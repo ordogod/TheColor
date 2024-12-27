@@ -78,6 +78,9 @@ import io.github.mmolosay.thecolor.presentation.impl.withoutBottom
 import io.github.mmolosay.thecolor.presentation.input.impl.ColorInput
 import io.github.mmolosay.thecolor.presentation.preview.ColorPreview
 import io.github.mmolosay.thecolor.utils.doNothing
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
 fun HomeScreen(
@@ -88,7 +91,7 @@ fun HomeScreen(
     val context = LocalContext.current
     val strings = remember(context) { HomeUiStrings(context) }
     val data = viewModel.dataFlow.collectAsStateWithLifecycle().value
-    val navEvent = viewModel.navEventFlow.collectAsStateWithLifecycle().value
+    val navEventFlow = viewModel.navEventFlow.filterNotNull()
     val selectedSwatchDetailsDialogController = remember(navBarAppearanceController) {
         navBarAppearanceController.branch("Selected Swatch Details Dialog")
     }
@@ -96,7 +99,7 @@ fun HomeScreen(
     HomeScreen(
         data = data,
         strings = strings,
-        navEvent = navEvent,
+        navEventFlow = navEventFlow,
         colorInput = {
             ColorInput(
                 viewModel = viewModel.colorInputViewModel,
@@ -130,13 +133,15 @@ fun HomeScreen(
 fun HomeScreen(
     data: HomeData,
     strings: HomeUiStrings,
-    navEvent: HomeNavEvent?, // TODO: use flow instead
+    navEventFlow: Flow<HomeNavEvent>,
     colorInput: @Composable () -> Unit,
     colorPreview: @Composable () -> Unit,
     colorCenter: @Composable () -> Unit,
     navigateToSettings: () -> Unit,
     navBarAppearanceController: NavBarAppearanceController,
 ) {
+    val focusManager = LocalFocusManager.current
+
     Scaffold(
         contentWindowInsets = ScaffoldDefaults.contentWindowInsets.withoutBottom(),
     ) { contentPadding ->
@@ -146,7 +151,6 @@ fun HomeScreen(
                 .consumeWindowInsets(contentPadding), // ensures correct height of 'TopAppBar()'
             data = data,
             strings = strings,
-            navEvent = navEvent,
             colorInput = colorInput,
             colorPreview = colorPreview,
             colorCenter = colorCenter,
@@ -154,13 +158,24 @@ fun HomeScreen(
             navBarAppearanceController = navBarAppearanceController,
         )
     }
+
+    LaunchedEffect(Unit) {
+        navEventFlow.collect { event ->
+            when (event) {
+                is HomeNavEvent.GoToSettings -> {
+                    focusManager.clearFocus()
+                    navigateToSettings()
+                }
+            }
+            event.onConsumed()
+        }
+    }
 }
 
 @Composable
 fun Home(
     data: HomeData,
     strings: HomeUiStrings,
-    navEvent: HomeNavEvent?,
     colorInput: @Composable () -> Unit,
     colorPreview: @Composable () -> Unit,
     colorCenter: @Composable () -> Unit,
@@ -170,7 +185,6 @@ fun Home(
 ) {
     val density = LocalDensity.current
     val context = LocalContext.current
-    val focusManager = LocalFocusManager.current
     var positionInRoot by remember { mutableStateOf<DpOffset?>(null) }
     var size by remember { mutableStateOf<DpSize?>(null) }
     Column(
@@ -186,7 +200,7 @@ fun Home(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopBar(
-            onSettingsClick = data.goToSettings,
+            onSettingsClick = data.requestToGoToSettings,
             settingsIconContentDesc = strings.settingsIconContentDesc,
         )
 
@@ -224,17 +238,6 @@ fun Home(
             navBarAppearanceController = navBarAppearanceController,
         )
 //        }
-    }
-
-    LaunchedEffect(navEvent) {
-        val event = navEvent ?: return@LaunchedEffect
-        when (event) {
-            is HomeNavEvent.GoToSettings -> {
-                focusManager.clearFocus()
-                navigateToSettings()
-            }
-        }
-        event.onConsumed()
     }
 
     val proceedResult = data.proceedResult
@@ -407,7 +410,7 @@ private fun Preview() {
         HomeScreen(
             data = previewData(),
             strings = previewUiStrings(),
-            navEvent = null,
+            navEventFlow = emptyFlow(),
             colorInput = {
                 Text(
                     modifier = Modifier
@@ -451,7 +454,7 @@ private fun previewData() =
             ),
         ),
         colorSchemeSelectedSwatchData = null,
-        goToSettings = {},
+        requestToGoToSettings = {},
     )
 
 private fun previewUiStrings() =

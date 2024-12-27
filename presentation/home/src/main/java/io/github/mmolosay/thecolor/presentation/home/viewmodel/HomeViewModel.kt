@@ -389,7 +389,7 @@ class HomeViewModel @Inject constructor(
             canProceed = canProceed,
             proceedResult = null, // 'proceed' action wasn't invoked yet
             colorSchemeSelectedSwatchData = null, // no selected swatch initially
-            goToSettings = ::setGoToSettingsNavEvent,
+            requestToGoToSettings = ::setGoToSettingsNavEvent,
         )
     }
 
