@@ -30,7 +30,6 @@ import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeCommand
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeCommandStore
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeEvent
 import io.github.mmolosay.thecolor.utils.doNothing
-import io.github.mmolosay.thecolor.utils.firstPronto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -340,7 +339,7 @@ class HomeViewModel @Inject constructor(
         kotlin.run invokeProceedExecutor@{
             val proceed = proceedExecutorFlow
                 .filterNotNull()
-                .firstPronto()
+                .first()
             proceed(
                 color = color,
                 colorRole = colorRole,
