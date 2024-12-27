@@ -30,11 +30,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.input.impl.ColorInputViewModel.DataState
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
-import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiData
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHex
-import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHexUiData
+import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHexData
+import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHexUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgb
-import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgbUiData
+import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgbData
+import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgbUiStrings
 import io.github.mmolosay.thecolor.utils.doNothing
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
 
@@ -51,9 +53,9 @@ fun ColorInput(
             doNothing()
         }
         is DataState.Ready -> {
-            val uiData = ColorInputUiData(dataState.data, strings)
             ColorInput(
-                uiData = uiData,
+                data = dataState.data,
+                strings = strings,
                 hexInput = {
                     ColorInputHex(viewModel = viewModel.hexViewModel)
                 },
@@ -67,7 +69,8 @@ fun ColorInput(
 
 @Composable
 fun ColorInput(
-    uiData: ColorInputUiData,
+    data: ColorInputData,
+    strings: ColorInputUiStrings,
     hexInput: @Composable () -> Unit,
     rgbInput: @Composable () -> Unit,
 ) {
@@ -76,7 +79,7 @@ fun ColorInput(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Crossfade(
-            targetState = uiData.selectedInputType,
+            targetState = data.selectedInputType,
             label = "Input type cross-fade",
         ) { type ->
             Box(
@@ -92,14 +95,18 @@ fun ColorInput(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        InputSelector(uiData)
+        InputSelector(
+            data = data,
+            strings = strings,
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun InputSelector(
-    uiData: ColorInputUiData,
+    data: ColorInputData,
+    strings: ColorInputUiStrings,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -107,8 +114,8 @@ private fun InputSelector(
         CompositionLocalProvider(
             LocalMinimumInteractiveComponentEnforcement provides false,
         ) {
-            uiData.orderedInputTypes.forEach { type ->
-                val isSelected = (type == uiData.selectedInputType)
+            data.orderedInputTypes.forEach { type ->
+                val isSelected = (type == data.selectedInputType)
                 val contentColor = LocalContentColor.current
                 val colors = FilterChipDefaults.filterChipColors(
                     labelColor = contentColor.copy(alpha = 0.60f),
@@ -122,9 +129,9 @@ private fun InputSelector(
                 )
                 FilterChip(
                     selected = isSelected,
-                    onClick = { uiData.onInputTypeChange(type) },
+                    onClick = { data.onInputTypeChange(type) },
                     label = {
-                        val labelText = type.label(uiData)
+                        val labelText = type.label(strings)
                         ChipLabel(text = labelText)
                     },
                     colors = colors,
@@ -144,10 +151,10 @@ private fun ChipLabel(text: String) {
     )
 }
 
-private fun DomainColorInputType.label(uiData: ColorInputUiData): String =
+private fun DomainColorInputType.label(strings: ColorInputUiStrings): String =
     when (this) {
-        DomainColorInputType.Hex -> uiData.hexLabel
-        DomainColorInputType.Rgb -> uiData.rgbLabel
+        DomainColorInputType.Hex -> strings.hexLabel
+        DomainColorInputType.Rgb -> strings.rgbLabel
     }
 
 @Preview(showBackground = true)
@@ -155,85 +162,109 @@ private fun DomainColorInputType.label(uiData: ColorInputUiData): String =
 private fun Preview() {
     TheColorTheme {
         ColorInput(
-            uiData = previewUiData(),
+            data = previewData(),
+            strings = previewUiStrings(),
             hexInput = {
-                ColorInputHex(uiData = previewInputHexUiData())
+                ColorInputHex(
+                    data = previewHexData(),
+                    strings = previewHexUiStrings(),
+                )
             },
             rgbInput = {
-                ColorInputRgb(uiData = previewInputRgbUiData())
+                ColorInputRgb(
+                    data = previewRgbData(),
+                    strings = previewRgbUiStrings(),
+                )
             },
         )
     }
 }
 
-private fun previewUiData() =
-    ColorInputUiData(
+private fun previewData() =
+    ColorInputData(
         selectedInputType = DomainColorInputType.Hex,
-        orderedInputTypes = DomainColorInputType.entries,
+        orderedInputTypes = listOf(
+            DomainColorInputType.Hex,
+            DomainColorInputType.Rgb,
+        ),
         onInputTypeChange = {},
+    )
+
+private fun previewUiStrings() =
+    ColorInputUiStrings(
         hexLabel = "HEX",
         rgbLabel = "RGB",
     )
 
-private fun previewInputHexUiData() =
-    ColorInputHexUiData(
-        textField = TextFieldUiData(
+private fun previewHexData() =
+    ColorInputHexData(
+        textField = TextFieldData(
             text = TextFieldData.Text(""),
             onTextChange = {},
             filterUserInput = { TextFieldData.Text(it) },
+            trailingButton = TextFieldData.TrailingButton.Visible(
+                onClick = {},
+            ),
+            shouldSelectAllTextOnFocus = false,
+        ),
+        submitColor = {},
+    )
+
+private fun previewHexUiStrings() =
+    ColorInputHexUiStrings(
+        textField = TextFieldUiStrings(
             label = "HEX",
             placeholder = "000000",
             prefix = "#",
-            trailingButton = TextFieldUiData.TrailingButton.Visible(
-                onClick = {},
-                iconContentDesc = "",
-            ),
-            addSelectAllTextOnFocusModifier = true,
+            trailingIconContentDesc = "Clear text",
         ),
-        onImeActionDone = {},
     )
 
-private fun previewInputRgbUiData() =
-    ColorInputRgbUiData(
-        rTextField = TextFieldUiData(
-            text = TextFieldData.Text("12"),
-            onTextChange = {},
-            filterUserInput = { TextFieldData.Text(it) },
-            label = "R",
-            placeholder = "0",
-            prefix = "",
-            trailingButton = TextFieldUiData.TrailingButton.Visible(
-                onClick = {},
-                iconContentDesc = "",
-            ),
-            addSelectAllTextOnFocusModifier = true,
-        ),
-        gTextField = TextFieldUiData(
+private fun previewRgbData() =
+    ColorInputRgbData(
+        rTextField = TextFieldData(
             text = TextFieldData.Text(""),
             onTextChange = {},
             filterUserInput = { TextFieldData.Text(it) },
-            label = "G",
-            placeholder = "0",
-            prefix = "",
-            trailingButton = TextFieldUiData.TrailingButton.Visible(
-                onClick = {},
-                iconContentDesc = "",
-            ),
-            addSelectAllTextOnFocusModifier = true,
+            trailingButton = TextFieldData.TrailingButton.Hidden,
+            shouldSelectAllTextOnFocus = false,
         ),
-        bTextField = TextFieldUiData(
-            text = TextFieldData.Text("255"),
+        gTextField = TextFieldData(
+            text = TextFieldData.Text(""),
             onTextChange = {},
             filterUserInput = { TextFieldData.Text(it) },
+            trailingButton = TextFieldData.TrailingButton.Hidden,
+            shouldSelectAllTextOnFocus = false,
+        ),
+        bTextField = TextFieldData(
+            text = TextFieldData.Text(""),
+            onTextChange = {},
+            filterUserInput = { TextFieldData.Text(it) },
+            trailingButton = TextFieldData.TrailingButton.Hidden,
+            shouldSelectAllTextOnFocus = false,
+        ),
+        submitColor = {},
+        isSmartBackspaceEnabled = true,
+    )
+
+private fun previewRgbUiStrings() =
+    ColorInputRgbUiStrings(
+        rTextField = TextFieldUiStrings(
+            label = "R",
+            placeholder = "0",
+            prefix = null,
+            trailingIconContentDesc = null,
+        ),
+        gTextField = TextFieldUiStrings(
+            label = "G",
+            placeholder = "0",
+            prefix = null,
+            trailingIconContentDesc = null,
+        ),
+        bTextField = TextFieldUiStrings(
             label = "B",
             placeholder = "0",
-            prefix = "",
-            trailingButton = TextFieldUiData.TrailingButton.Visible(
-                onClick = {},
-                iconContentDesc = "",
-            ),
-            addSelectAllTextOnFocusModifier = true,
+            prefix = null,
+            trailingIconContentDesc = null,
         ),
-        onImeActionDone = {},
-        addSmartBackspaceModifier = true,
     )

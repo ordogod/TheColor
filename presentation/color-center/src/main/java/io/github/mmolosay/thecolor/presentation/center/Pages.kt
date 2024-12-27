@@ -12,40 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
-import io.github.mmolosay.thecolor.presentation.center.ColorCenterUiData.Page.ChangePageButton
 import io.github.mmolosay.thecolor.presentation.design.colorsOnTintedSurface
-
-@Composable
-fun DetailsPage(
-    uiData: ColorCenterUiData.Page,
-    colorDetails: @Composable () -> Unit,
-) =
-    Page(
-        content = colorDetails,
-        changePageButton = {
-            ChangePageButton(
-                uiData = uiData.changePageButton,
-            )
-        },
-    )
-
-@Composable
-fun SchemePage(
-    uiData: ColorCenterUiData.Page,
-    colorScheme: @Composable () -> Unit,
-) =
-    Page(
-        content = colorScheme,
-        changePageButton = {
-            ChangePageButton(
-                uiData = uiData.changePageButton,
-            )
-        },
-    )
 
 @Composable
 internal fun Page(
@@ -64,13 +36,16 @@ internal fun Page(
 }
 
 @Composable
-private fun ChangePageButton(
-    uiData: ChangePageButton,
+internal fun ChangePageButton(
+    text: String,
+    onClick: () -> Unit,
+    icon: ImageVector,
+    iconPlacement: IconPlacement,
 ) {
     @Composable
     fun Icon() =
         androidx.compose.material3.Icon(
-            imageVector = uiData.icon,
+            imageVector = icon,
             contentDescription = null, // described by neighboring text
         )
 
@@ -90,19 +65,23 @@ private fun ChangePageButton(
         )
     )
     OutlinedButton(
-        onClick = uiData.onClick,
+        onClick = onClick,
         colors = colors,
         border = border,
     ) {
-        if (uiData.iconPlacement == ChangePageButton.IconPlacement.Leading) {
+        if (iconPlacement == IconPlacement.Leading) {
             Icon()
         }
         Text(
-            text = uiData.text,
+            text = text,
             style = LocalTextStyle.current.merge(addedTextStyle),
         )
-        if (uiData.iconPlacement == ChangePageButton.IconPlacement.Trailing) {
+        if (iconPlacement == IconPlacement.Trailing) {
             Icon()
         }
     }
+}
+
+enum class IconPlacement {
+    Leading, Trailing,
 }

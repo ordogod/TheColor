@@ -10,7 +10,7 @@ data class HomeData(
     val canProceed: CanProceed,
     val proceedResult: ProceedResult?,
     val colorSchemeSelectedSwatchData: ColorSchemeSelectedSwatchData?,
-    val goToSettings: () -> Unit,
+    val goToSettings: () -> Unit, // TODO: rename to smth like "askGoToSettings" to depict an intent; remove?
 ) {
 
     sealed interface CanProceed {

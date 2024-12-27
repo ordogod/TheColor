@@ -21,7 +21,6 @@ data class ColorDetailsUiStrings(
     val goBackToInitialColorButtonText: String,
     val exactValueLabel: String,
     val deviationLabel: String,
-    val viewColorSchemeButtonText: String,
 )
 
 fun ColorDetailsUiStrings(context: Context) =
@@ -38,5 +37,4 @@ fun ColorDetailsUiStrings(context: Context) =
         goBackToInitialColorButtonText = context.getString(R.string.color_details_go_back_to_initial_color_button_text),
         exactValueLabel = context.getString(R.string.color_details_exact_value_label),
         deviationLabel = context.getString(R.string.color_details_deviation_label),
-        viewColorSchemeButtonText = context.getString(R.string.color_details_view_color_scheme_button_text),
     )

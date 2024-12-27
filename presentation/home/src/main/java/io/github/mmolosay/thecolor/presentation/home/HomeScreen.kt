@@ -53,6 +53,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.debounce.debounced
+import io.github.mmolosay.thecolor.presentation.api.ColorInt
 import io.github.mmolosay.thecolor.presentation.api.nav.bar.NavBarAppearance
 import io.github.mmolosay.thecolor.presentation.api.nav.bar.NavBarAppearanceController
 import io.github.mmolosay.thecolor.presentation.api.nav.bar.RootNavBarAppearanceController
@@ -62,8 +63,6 @@ import io.github.mmolosay.thecolor.presentation.center.ColorCenterShape
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
-import io.github.mmolosay.thecolor.presentation.home.HomeUiData.ProceedButton
-import io.github.mmolosay.thecolor.presentation.home.HomeUiData.ShowColorCenter
 import io.github.mmolosay.thecolor.presentation.home.viewmodel.HomeData
 import io.github.mmolosay.thecolor.presentation.home.viewmodel.HomeNavEvent
 import io.github.mmolosay.thecolor.presentation.home.viewmodel.HomeViewModel
@@ -71,6 +70,7 @@ import io.github.mmolosay.thecolor.presentation.impl.ExtendedLifecycleEventObser
 import io.github.mmolosay.thecolor.presentation.impl.ExtendedLifecycleEventObserver.LifecycleDirectionChangeEvent
 import io.github.mmolosay.thecolor.presentation.impl.TintedSurface
 import io.github.mmolosay.thecolor.presentation.impl.onlyBottom
+import io.github.mmolosay.thecolor.presentation.impl.toCompose
 import io.github.mmolosay.thecolor.presentation.impl.toDpOffset
 import io.github.mmolosay.thecolor.presentation.impl.toDpSize
 import io.github.mmolosay.thecolor.presentation.impl.toLifecycleEventObserver
@@ -88,14 +88,14 @@ fun HomeScreen(
     val context = LocalContext.current
     val strings = remember(context) { HomeUiStrings(context) }
     val data = viewModel.dataFlow.collectAsStateWithLifecycle().value
-    val uiData = HomeUiData(data, strings)
     val navEvent = viewModel.navEventFlow.collectAsStateWithLifecycle().value
     val selectedSwatchDetailsDialogController = remember(navBarAppearanceController) {
         navBarAppearanceController.branch("Selected Swatch Details Dialog")
     }
 
     HomeScreen(
-        uiData = uiData,
+        data = data,
+        strings = strings,
         navEvent = navEvent,
         colorInput = {
             ColorInput(
@@ -128,8 +128,9 @@ fun HomeScreen(
 
 @Composable
 fun HomeScreen(
-    uiData: HomeUiData,
-    navEvent: HomeNavEvent?,
+    data: HomeData,
+    strings: HomeUiStrings,
+    navEvent: HomeNavEvent?, // TODO: use flow instead
     colorInput: @Composable () -> Unit,
     colorPreview: @Composable () -> Unit,
     colorCenter: @Composable () -> Unit,
@@ -143,7 +144,8 @@ fun HomeScreen(
             modifier = Modifier
                 .padding(contentPadding)
                 .consumeWindowInsets(contentPadding), // ensures correct height of 'TopAppBar()'
-            uiData = uiData,
+            data = data,
+            strings = strings,
             navEvent = navEvent,
             colorInput = colorInput,
             colorPreview = colorPreview,
@@ -156,7 +158,8 @@ fun HomeScreen(
 
 @Composable
 fun Home(
-    uiData: HomeUiData,
+    data: HomeData,
+    strings: HomeUiStrings,
     navEvent: HomeNavEvent?,
     colorInput: @Composable () -> Unit,
     colorPreview: @Composable () -> Unit,
@@ -183,19 +186,24 @@ fun Home(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopBar(
-            uiData = uiData.topBar,
+            onSettingsClick = data.goToSettings,
+            settingsIconContentDesc = strings.settingsIconContentDesc,
         )
 
         Spacer(modifier = Modifier.height(160.dp))
         Text(
-            text = uiData.headline,
+            text = strings.headline,
             style = MaterialTheme.typography.titleLarge,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
         colorInput()
 
-        ProceedButton(uiData.proceedButton)
+        ProceedButton(
+            onClick = (data.canProceed as? HomeData.CanProceed.Yes)?.proceed ?: ::doNothing,
+            enabled = (data.canProceed is HomeData.CanProceed.Yes),
+            text = strings.proceedButtonText,
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
         // TODO: animated color preview is a part of bigger animation, see AnimatedColorCenter.kt
@@ -211,7 +219,7 @@ fun Home(
         Spacer(modifier = Modifier.weight(1f)) // maximum
 //        AnimatedColorCenter {
         ColorCenterOnTintedSurface(
-            state = uiData.showColorCenter,
+            proceedResult = data.proceedResult,
             colorCenter = colorCenter,
             navBarAppearanceController = navBarAppearanceController,
         )
@@ -228,42 +236,61 @@ fun Home(
         }
         event.onConsumed()
     }
-    LaunchedEffect(uiData) {
-        val toastData = uiData.invalidSubmittedColorToast ?: return@LaunchedEffect
+
+    val proceedResult = data.proceedResult
+    LaunchedEffect(proceedResult) {
+        if (proceedResult !is HomeData.ProceedResult.InvalidSubmittedColor) return@LaunchedEffect
         Toast
-            .makeText(context, toastData.message, Toast.LENGTH_SHORT)
+            .makeText(context, strings.invalidSubmittedColorMessage, Toast.LENGTH_SHORT)
             .show()
-        toastData.onShown()
+        proceedResult.discard()
     }
 }
 
 @Composable
 private fun ProceedButton(
-    uiData: ProceedButton,
+    onClick: () -> Unit,
+    enabled: Boolean,
+    text: String,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val wrappedOnClick: () -> Unit = remember(uiData) {
+    val wrappedOnClick: () -> Unit = remember(onClick) {
         {
-            uiData.onClick()
+            onClick()
             keyboardController?.hide()
         }
     }
     Button(
         onClick = wrappedOnClick,
-        enabled = uiData.enabled,
+        enabled = enabled,
     ) {
-        Text(text = uiData.text)
+        Text(text = text)
     }
 }
 
 @Composable
 private fun ColorCenterOnTintedSurface(
-    state: ShowColorCenter,
+    proceedResult: HomeData.ProceedResult?,
     colorCenter: @Composable () -> Unit,
     navBarAppearanceController: NavBarAppearanceController,
 ) {
-    if (state !is ShowColorCenter.Yes) return
-    val colors = if (state.useLightContentColors) colorsOnDarkSurface() else colorsOnLightSurface()
+    if (proceedResult !is HomeData.ProceedResult.Success) return // not Success or null
+    ColorCenterOnTintedSurface(
+        surfaceColor = proceedResult.colorData.color.toCompose(),
+        isSurfaceColorDark = proceedResult.colorData.isDark,
+        colorCenter = colorCenter,
+        navBarAppearanceController = navBarAppearanceController,
+    )
+}
+
+@Composable
+private fun ColorCenterOnTintedSurface(
+    surfaceColor: Color,
+    isSurfaceColorDark: Boolean,
+    colorCenter: @Composable () -> Unit,
+    navBarAppearanceController: NavBarAppearanceController,
+) {
+    val colors = if (isSurfaceColorDark) colorsOnDarkSurface() else colorsOnLightSurface()
     val windowInsets = WindowInsets.systemBars.onlyBottom()
     TintedSurface(
         modifier = Modifier
@@ -271,7 +298,7 @@ private fun ColorCenterOnTintedSurface(
                 clip = true
                 shape = ColorCenterShape
             },
-        surfaceColor = state.backgroundColor,
+        surfaceColor = surfaceColor,
         contentColors = colors,
     ) {
         Box(
@@ -285,10 +312,10 @@ private fun ColorCenterOnTintedSurface(
 
     val lifecycleOwner = LocalLifecycleOwner.current
     val lifecycle = lifecycleOwner.lifecycle
-    DisposableEffect(lifecycleOwner, state) {
+    DisposableEffect(lifecycleOwner, surfaceColor, isSurfaceColorDark) {
         val observer = ColorCenterLifecycleObserver(
             navBarAppearanceController = navBarAppearanceController,
-            appearance = state.navBarAppearance,
+            appearance = navBarAppearance(useLightTintForControls = isSurfaceColorDark),
         ).toLifecycleEventObserver()
         lifecycle.addObserver(observer)
         onDispose {
@@ -301,19 +328,19 @@ private fun ColorCenterOnTintedSurface(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
-    uiData: HomeUiData.TopBar,
+    onSettingsClick: () -> Unit,
+    settingsIconContentDesc: String,
 ) {
-    val onClick = uiData.settingsAction.onClick
-    val debouncedOnClick: () -> Unit = remember(onClick) {
-        debounced(action = onClick)
+    val debouncedOnSettingsClick: () -> Unit = remember(onSettingsClick) {
+        debounced(action = onSettingsClick)
     }
     TopAppBar(
         title = {},
         actions = {
-            IconButton(onClick = debouncedOnClick) {
+            IconButton(onClick = debouncedOnSettingsClick) {
                 Icon(
                     imageVector = Icons.Rounded.Settings,
-                    contentDescription = uiData.settingsAction.iconContentDescription,
+                    contentDescription = settingsIconContentDesc,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -378,7 +405,8 @@ private class ColorCenterLifecycleObserver(
 private fun Preview() {
     TheColorTheme {
         HomeScreen(
-            uiData = previewUiData(),
+            data = previewData(),
+            strings = previewUiStrings(),
             navEvent = null,
             colorInput = {
                 Text(
@@ -413,27 +441,23 @@ private fun Preview() {
     }
 }
 
-private fun previewUiData() =
-    HomeUiData(
-        topBar = HomeUiData.TopBar(
-            settingsAction = HomeUiData.TopBar.SettingsAction(
-                onClick = {},
-                iconContentDescription = "",
+private fun previewData() =
+    HomeData(
+        canProceed = HomeData.CanProceed.No,
+        proceedResult = HomeData.ProceedResult.Success(
+            colorData = HomeData.ProceedResult.Success.ColorData(
+                color = ColorInt(0x1A803F),
+                isDark = true,
             ),
         ),
+        colorSchemeSelectedSwatchData = null,
+        goToSettings = {},
+    )
+
+private fun previewUiStrings() =
+    HomeUiStrings(
+        settingsIconContentDesc = "Go to Settings",
         headline = "Find your color",
-        proceedButton = ProceedButton(
-            onClick = {},
-            enabled = true,
-            text = "Proceed",
-        ),
-        colorPreviewState = HomeUiData.ColorPreviewState.Default,
-        showColorCenter = ShowColorCenter.Yes(
-            backgroundColor = Color(0xFF_123456),
-            useLightContentColors = true,
-            navBarAppearance = navBarAppearance(
-                useLightTintForControls = true,
-            ),
-        ),
-        invalidSubmittedColorToast = null,
+        proceedButtonText = "Proceed",
+        invalidSubmittedColorMessage = "Please enter a valid color",
     )

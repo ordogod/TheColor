@@ -57,6 +57,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.mmolosay.thecolor.presentation.api.ColorInt
 import io.github.mmolosay.thecolor.presentation.design.ColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
@@ -66,11 +67,9 @@ import io.github.mmolosay.thecolor.presentation.design.colorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.errors.ErrorMessageWithButton
 import io.github.mmolosay.thecolor.presentation.errors.message
 import io.github.mmolosay.thecolor.presentation.errors.rememberDefaultErrorsUiStrings
-import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeUiData.ApplyChangesButton
-import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeUiData.ModeSection
-import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeUiData.Swatch
-import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeUiData.SwatchCountSection
+import io.github.mmolosay.thecolor.presentation.impl.toCompose
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeViewModel.DataState
+import io.github.mmolosay.thecolor.domain.model.ColorScheme as DomainColorScheme
 
 @Composable
 fun ColorScheme(
@@ -84,12 +83,9 @@ fun ColorScheme(
         is DataState.Loading ->
             ColorSchemeLoading()
         is DataState.Ready -> {
-            val uiData = ColorSchemeUiData(
+            ColorScheme(
                 data = state.data,
                 strings = strings,
-            )
-            ColorScheme(
-                uiData = uiData,
             )
         }
         is DataState.Error ->
@@ -99,7 +95,8 @@ fun ColorScheme(
 
 @Composable
 fun ColorScheme(
-    uiData: ColorSchemeUiData,
+    data: ColorSchemeData,
+    strings: ColorSchemeUiStrings,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -107,24 +104,37 @@ fun ColorScheme(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
     ) {
-        Swatches(swatches = uiData.swatches)
+        Swatches(
+            swatches = data.swatches,
+            onSwatchClick = data.onSwatchSelect,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
-        ModeSection(uiData = uiData.modeSection)
+        ModeSection(
+            data = data,
+            strings = strings,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
-        SwatchCountSection(uiData = uiData.swatchCountSection)
+        SwatchCountSection(
+            data = data,
+            strings = strings,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
         ApplyChangesButton(
-            uiData = uiData.applyChangesButton,
             modifier = Modifier.align(Alignment.End),
+            changes = data.changes,
+            text = strings.applyChangesButtonText,
         )
     }
 }
 
 @Composable
-private fun Swatches(swatches: List<Swatch>) {
+private fun Swatches(
+    swatches: List<ColorSchemeData.Swatch>,
+    onSwatchClick: (indexOfSwatch: Int) -> Unit,
+) {
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
@@ -139,23 +149,30 @@ private fun Swatches(swatches: List<Swatch>) {
             modifier = Modifier.padding(horizontal = 48.dp), // equivalent of content padding in LazyList
             horizontalArrangement = Arrangement.spacedBy((-32).dp),
         ) {
-            swatches.forEach { swatch ->
-                Swatch(swatch)
+            swatches.forEachIndexed { index, swatch ->
+                Swatch(
+                    swatch = swatch,
+                    onClick = { onSwatchClick(index) },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun Swatch(swatch: Swatch) {
-    val colors = rememberContentColors(useLight = swatch.useLightContentColors)
+private fun Swatch(
+    swatch: ColorSchemeData.Swatch,
+    onClick: () -> Unit,
+) {
+    // TODO: ripple is barely visible for all 'ColorsOnTintedSurface'; make more prominent
+    val colors = rememberContentColors(useLight = swatch.isDark) // light content on dark and vice versa
     ProvideColorsOnTintedSurface(colors) { // provides correct ripple
         Box(
             modifier = Modifier
                 .size(64.dp)
                 .clip(CircleShape)
-                .background(swatch.color)
-                .clickable(onClick = swatch.onClick),
+                .background(swatch.color.toCompose())
+                .clickable(onClick = onClick),
         )
     }
 }
@@ -174,73 +191,122 @@ private fun Modifier.edgeToEdge(
     }
 
 @Composable
-private fun ModeSection(uiData: ModeSection) {
+private fun ModeSection(
+    data: ColorSchemeData,
+    strings: ColorSchemeUiStrings,
+) {
     SectionTitle(
-        label = uiData.label,
-        value = uiData.value,
+        label = strings.modeLabel,
+        value = data.activeMode.name(strings),
     )
     Spacer(modifier = Modifier.height(4.dp))
-    Modes(modes = uiData.modes)
+    Modes(
+        data = data,
+        strings = strings,
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Modes(modes: List<ModeSection.Mode>) {
+private fun Modes(
+    data: ColorSchemeData,
+    strings: ColorSchemeUiStrings,
+) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        modes.forEach { mode ->
-            ModeChip(mode)
+        DomainColorScheme.Mode.entries.forEach { mode ->
+            ModeChip(
+                selected = (mode == data.selectedMode),
+                onClick = { data.onModeSelect(mode) },
+                name = mode.name(strings),
+            )
         }
     }
 }
 
 @Composable
-private fun ModeChip(mode: ModeSection.Mode) {
+private fun ModeChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    name: String,
+) {
     SelectableChip(
-        selected = mode.isSelected,
-        onClick = mode.onSelect,
+        selected = selected,
+        onClick = onClick,
         label = {
-            SelectableChipLabel(text = mode.name)
+            SelectableChipLabel(text = name)
         },
     )
 }
 
+private fun DomainColorScheme.Mode.name(
+    strings: ColorSchemeUiStrings,
+): String =
+    when (this) {
+        DomainColorScheme.Mode.Monochrome -> strings.modeMonochromeName
+        DomainColorScheme.Mode.MonochromeDark -> strings.modeMonochromeDarkName
+        DomainColorScheme.Mode.MonochromeLight -> strings.modeMonochromeLightName
+        DomainColorScheme.Mode.Analogic -> strings.modeAnalogicName
+        DomainColorScheme.Mode.Complement -> strings.modeComplementName
+        DomainColorScheme.Mode.AnalogicComplement -> strings.modeAnalogicComplementName
+        DomainColorScheme.Mode.Triad -> strings.modeTriadName
+        DomainColorScheme.Mode.Quad -> strings.modeQuadName
+    }
+
 @Composable
-private fun SwatchCountSection(uiData: SwatchCountSection) {
+private fun SwatchCountSection(
+    data: ColorSchemeData,
+    strings: ColorSchemeUiStrings,
+) {
     SectionTitle(
-        label = uiData.label,
-        value = uiData.value,
+        label = strings.swatchCountLabel,
+        value = data.activeSwatchCount.stringValue(),
     )
     Spacer(modifier = Modifier.height(4.dp))
-    SwatchCountItems(items = uiData.swatchCountItems)
+    SwatchCountItems(
+        data = data,
+    )
 
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SwatchCountItems(items: List<SwatchCountSection.SwatchCount>) {
+private fun SwatchCountItems(
+    data: ColorSchemeData,
+) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items.forEach { swatchCount ->
-            SwatchCountItem(swatchCount)
+        ColorSchemeData.SwatchCount.entries.forEach { swatchCount ->
+            SwatchCountItem(
+                selected = (swatchCount == data.selectedSwatchCount),
+                onClick = { data.onSwatchCountSelect(swatchCount) },
+                value = swatchCount.stringValue(),
+            )
         }
     }
 }
 
 @Composable
-private fun SwatchCountItem(item: SwatchCountSection.SwatchCount) {
+private fun SwatchCountItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    value: String,
+) {
     SelectableChip(
-        selected = item.isSelected,
-        onClick = item.onSelect,
+        selected = selected,
+        onClick = onClick,
         label = {
-            SelectableChipLabel(text = item.text)
+            SelectableChipLabel(text = value)
         },
     )
 }
+
+private fun ColorSchemeData.SwatchCount.stringValue(): String =
+    this.value.toString()
 
 @Composable
 private fun SectionTitle(
@@ -311,15 +377,17 @@ private fun SelectableChipLabel(
 
 @Composable
 private fun ApplyChangesButton(
-    uiData: ApplyChangesButton,
+    changes: ColorSchemeData.Changes,
+    text: String,
     modifier: Modifier = Modifier,
 ) {
-    // when uiData is Hidden, we want to have memoized Visible data for some time while "exit" animation is running
-    var visibleUiData by remember { mutableStateOf<ApplyChangesButton.Visible?>(null) }
+    // when 'changes' becomes 'Changes.None', we want to have memoized last
+    // 'Changes.Present' data for some time while "exit" animation is running
+    var presentChanges by remember { mutableStateOf<ColorSchemeData.Changes.Present?>(null) }
     val translation = with(LocalDensity.current) { 12.dp.roundToPx() }
     fun <T> animationSpec(): FiniteAnimationSpec<T> = spring(stiffness = 1_000f)
     AnimatedVisibility(
-        visible = uiData is ApplyChangesButton.Visible,
+        visible = changes is ColorSchemeData.Changes.Present,
         modifier = modifier,
         enter = slideInHorizontally(
             animationSpec = animationSpec(),
@@ -334,7 +402,7 @@ private fun ApplyChangesButton(
             animationSpec = animationSpec(),
         ),
     ) {
-        val lastVisible = visibleUiData ?: return@AnimatedVisibility
+        val lastPresentChanges = presentChanges ?: return@AnimatedVisibility
         val colors = ButtonDefaults.outlinedButtonColors(
             contentColor = colorsOnTintedSurface.accent,
         )
@@ -342,7 +410,7 @@ private fun ApplyChangesButton(
             brush = SolidColor(colorsOnTintedSurface.muted),
         )
         OutlinedButton(
-            onClick = lastVisible.onClick,
+            onClick = lastPresentChanges.applyChanges,
             colors = colors,
             border = border,
         ) {
@@ -353,12 +421,12 @@ private fun ApplyChangesButton(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = lastVisible.text,
+                text = text,
             )
         }
     }
-    LaunchedEffect(uiData) {
-        visibleUiData = uiData as? ApplyChangesButton.Visible ?: return@LaunchedEffect
+    LaunchedEffect(changes) {
+        presentChanges = changes as? ColorSchemeData.Changes.Present ?: return@LaunchedEffect
     }
 }
 
@@ -401,8 +469,9 @@ private fun PreviewLight() {
         val colors = rememberContentColors(useLight = true)
         ProvideColorsOnTintedSurface(colors) {
             ColorScheme(
-                uiData = previewUiData(),
                 modifier = Modifier.background(Color(0xFF_123123)),
+                data = previewData(),
+                strings = previewUiStrings(),
             )
         }
     }
@@ -415,91 +484,76 @@ private fun PreviewDark() {
         val colors = rememberContentColors(useLight = false)
         ProvideColorsOnTintedSurface(colors) {
             ColorScheme(
-                uiData = previewUiData(),
                 modifier = Modifier.background(Color(0xFF_F0F8FF)),
+                data = previewData(),
+                strings = previewUiStrings(),
             )
         }
     }
 }
 
-@Suppress("MoveLambdaOutsideParentheses")
-private fun previewUiData() =
-    ColorSchemeUiData(
+private fun previewData() =
+    ColorSchemeData(
         swatches = listOf(
-            Swatch(
-                color = Color(0xFF_05160B),
-                useLightContentColors = true,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x05160B),
+                isDark = true,
             ),
-            Swatch(
-                color = Color(0xFF_0A2D17),
-                useLightContentColors = true,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x0A2D17),
+                isDark = true,
             ),
-            Swatch(
-                color = Color(0xFF_0F4522),
-                useLightContentColors = true,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x0F4522),
+                isDark = true,
             ),
-            Swatch(
-                color = Color(0xFF_135C2E),
-                useLightContentColors = true,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x135C2E),
+                isDark = true,
             ),
-            Swatch(
-                color = Color(0xFF_187439),
-                useLightContentColors = true,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x187439),
+                isDark = true,
             ),
-            Swatch(
-                color = Color(0xFF_1C8C45),
-                useLightContentColors = false,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x1C8C45),
+                isDark = false,
             ),
-            Swatch(
-                color = Color(0xFF_20A450),
-                useLightContentColors = false,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x20A450),
+                isDark = false,
             ),
-            Swatch(
-                color = Color(0xFF_24BC5C),
-                useLightContentColors = false,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x24BC5C),
+                isDark = false,
             ),
-            Swatch(
-                color = Color(0xFF_28D567),
-                useLightContentColors = false,
-                onClick = {},
+            ColorSchemeData.Swatch(
+                color = ColorInt(0x28D567),
+                isDark = false,
             ),
         ),
-        modeSection = ModeSection(
-            label = "Mode:",
-            value = "analogic-complement",
-            modes = listOf(
-                ModeSection.Mode("monochrome", false, {}),
-                ModeSection.Mode("monochrome-dark", false, {}),
-                ModeSection.Mode("monochrome-light", false, {}),
-                ModeSection.Mode("analogic", isSelected = true, {}),
-                ModeSection.Mode("complement", false, {}),
-                ModeSection.Mode("analogic-complement", false, {}),
-                ModeSection.Mode("triad", false, {}),
-                ModeSection.Mode("quad", false, {}),
-            ),
-        ),
-        swatchCountSection = SwatchCountSection(
-            label = "Swatch count:",
-            value = "12",
-            swatchCountItems = listOf(
-                SwatchCountSection.SwatchCount("5", false, {}),
-                SwatchCountSection.SwatchCount("6", false, {}),
-                SwatchCountSection.SwatchCount("8", false, {}),
-                SwatchCountSection.SwatchCount("10", isSelected = true, {}),
-                SwatchCountSection.SwatchCount("12", false, {}),
-                SwatchCountSection.SwatchCount("15", false, {}),
-            ),
-        ),
-        applyChangesButton = ApplyChangesButton.Visible(
-            text = "Apply changes",
-            onClick = {},
-        ),
+        onSwatchSelect = {},
+        activeMode = DomainColorScheme.Mode.MonochromeDark,
+        selectedMode = DomainColorScheme.Mode.MonochromeDark,
+        onModeSelect = {},
+        activeSwatchCount = ColorSchemeData.SwatchCount.Nine,
+        selectedSwatchCount = ColorSchemeData.SwatchCount.Nine,
+        onSwatchCountSelect = {},
+        changes = ColorSchemeData.Changes.Present(applyChanges = {}),
+    )
+
+@Suppress("SpellCheckingInspection")
+private fun previewUiStrings() =
+    ColorSchemeUiStrings(
+        modeLabel = "Mode:",
+        modeMonochromeName = "monochrome",
+        modeMonochromeDarkName = "monochrome-dark",
+        modeMonochromeLightName = "monochrome-light",
+        modeAnalogicName = "analogic",
+        modeComplementName = "complement",
+        modeAnalogicComplementName = "analogic-complement",
+        modeTriadName = "triad",
+        modeQuadName = "quad",
+        swatchCountLabel = "Swatch count:",
+        applyChangesButtonText = "Apply changes",
     )
