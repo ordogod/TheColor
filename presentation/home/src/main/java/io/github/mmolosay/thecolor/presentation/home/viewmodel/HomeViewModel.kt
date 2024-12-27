@@ -357,6 +357,11 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun setGoToSettingsNavEvent() {
+        /*
+         * Right now there's no logic in ViewModel that accompanies navigating to Settings.
+         * In a real app, here would've been a logic for accepting / denying UI's navigation request
+         * depending on the business logic. Here may also be sending data to analytics or logging.
+         */
         val event = HomeNavEvent.GoToSettings(
             onConsumed = ::clearNavEvent,
         )
