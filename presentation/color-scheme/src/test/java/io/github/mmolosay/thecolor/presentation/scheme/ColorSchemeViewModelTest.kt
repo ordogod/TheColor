@@ -2,6 +2,7 @@ package io.github.mmolosay.thecolor.presentation.scheme
 
 import io.github.mmolosay.thecolor.domain.model.Color
 import io.github.mmolosay.thecolor.domain.model.ColorDetails
+import io.github.mmolosay.thecolor.domain.model.ColorScheme
 import io.github.mmolosay.thecolor.domain.model.ColorScheme.Mode
 import io.github.mmolosay.thecolor.domain.result.HttpFailure
 import io.github.mmolosay.thecolor.domain.result.Result
@@ -24,6 +25,8 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
@@ -122,6 +125,52 @@ class ColorSchemeViewModelTest {
             commandFlow.emit(command)
 
             sut.dataStateFlow.value should beOfType<DataState.Ready>()
+        }
+
+    @Test
+    fun `emission of 'fetch data' command cancells previous 'fetch data' job, so that repository is only accessed once`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
+            every { commandProvider.commandFlow } returns commandFlow
+            val fetchedScheme: ColorScheme = mockk(relaxed = true)
+            val getColorSchemeDeferred = CompletableDeferred<Result<ColorScheme>>()
+            coEvery {
+                getColorScheme.invoke(request = any())
+            } coAnswers {
+                getColorSchemeDeferred.await()
+            }
+            every {
+                createDataMock(
+                    scheme = any(),
+                    config = any(),
+                    onSwatchSelect = any(),
+                    onModeSelect = any(),
+                    onSwatchCountSelect = any(),
+                )
+            } returns mockk()
+            createSut()
+
+            kotlin.run emitFirstCommand@{
+                val command = ColorSchemeCommand.FetchData(color = mockk<Color.Hex>())
+                commandFlow.emit(command)
+            }
+            kotlin.run emitSecondCommand@{
+                val command = ColorSchemeCommand.FetchData(color = mockk<Color.Hex>())
+                commandFlow.emit(command)
+            }
+            getColorSchemeDeferred.complete(value = Result.Success(fetchedScheme))
+
+            // verify that component that is called deep inside 'fetchColorDetails()' is only called once:
+            // the first coroutine is cancelled thus it never goes deep enough to trigger this component.
+            coVerify(exactly = 1) {
+                createDataMock(
+                    scheme = any(),
+                    config = any(),
+                    onSwatchSelect = any(),
+                    onModeSelect = any(),
+                    onSwatchCountSelect = any(),
+                )
+            }
         }
 
     @Test
@@ -362,15 +411,16 @@ class ColorSchemeViewModelTest {
 
     fun createSut(
         createData: CreateColorSchemeDataUseCase = createDataMock,
+        coroutineDispatcher: CoroutineDispatcher = mainDispatcherRule.testDispatcher,
     ) =
         ColorSchemeViewModel(
-            coroutineScope = TestScope(context = mainDispatcherRule.testDispatcher),
+            coroutineScope = TestScope(context = coroutineDispatcher),
             commandProvider = commandProvider,
             eventStore = eventStore,
             getColorScheme = getColorScheme,
             createData = createData,
-            defaultDispatcher = mainDispatcherRule.testDispatcher,
-            ioDispatcher = mainDispatcherRule.testDispatcher,
+            defaultDispatcher = coroutineDispatcher,
+            ioDispatcher = coroutineDispatcher,
         ).also {
             sut = it
         }
