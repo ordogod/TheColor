@@ -27,12 +27,12 @@ import io.mockk.mockk
 import io.mockk.runs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -414,7 +414,7 @@ class ColorSchemeViewModelTest {
         coroutineDispatcher: CoroutineDispatcher = mainDispatcherRule.testDispatcher,
     ) =
         ColorSchemeViewModel(
-            coroutineScope = TestScope(context = coroutineDispatcher),
+            coroutineScope = CoroutineScope(context = coroutineDispatcher),
             commandProvider = commandProvider,
             eventStore = eventStore,
             getColorScheme = getColorScheme,

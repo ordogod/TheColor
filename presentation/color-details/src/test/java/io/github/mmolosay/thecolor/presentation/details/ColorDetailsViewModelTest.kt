@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -102,7 +101,8 @@ class ColorDetailsViewModelTest {
             val color = mockk<Color.Hex>()
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
-            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(value = mockk())
+            val fetchedDetails: ColorDetails = mockk(relaxed = true)
+            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(fetchedDetails)
             every {
                 createDataMock(
                     details = any(),
@@ -146,7 +146,8 @@ class ColorDetailsViewModelTest {
             val color = mockk<Color.Hex>()
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
-            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(value = mockk())
+            val fetchedDetails: ColorDetails = mockk(relaxed = true)
+            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(fetchedDetails)
             every {
                 createDataMock(
                     details = any(),

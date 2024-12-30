@@ -22,12 +22,12 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -68,7 +68,7 @@ abstract class ColorInputHexViewModelTest {
 
     fun createSut() =
         ColorInputHexViewModel(
-            coroutineScope = TestScope(context = mainDispatcherRule.testDispatcher),
+            coroutineScope = CoroutineScope(context = mainDispatcherRule.testDispatcher),
             mediator = mediator,
             eventStore = eventStore,
             textFieldViewModelFactory = textFieldViewModelFactory,

@@ -47,6 +47,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -54,7 +55,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -94,7 +94,7 @@ class HomeViewModelTest {
         every { get() } returns colorSchemeEventStore
     }
     val colorCenterComponentsStore = ColorCenterComponentsStore(
-        viewModelScope = TestScope(mainDispatcherRule.testDispatcher),
+        viewModelScope = CoroutineScope(mainDispatcherRule.testDispatcher),
         colorDetailsCommandStoreProvider = colorDetailsCommandStoreProvider,
         colorDetailsEventStoreProvider = colorDetailsEventStoreProvider,
         colorDetailsViewModelFactory = { _, _, _ -> colorDetailsViewModel },

@@ -23,13 +23,13 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -74,7 +74,7 @@ abstract class ColorInputRgbViewModelTest {
 
     fun createSut() =
         ColorInputRgbViewModel(
-            coroutineScope = TestScope(mainDispatcherRule.testDispatcher),
+            coroutineScope = CoroutineScope(mainDispatcherRule.testDispatcher),
             mediator = mediator,
             eventStore = eventStore,
             textFieldViewModelFactory = textFieldViewModelFactory,
