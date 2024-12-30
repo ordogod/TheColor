@@ -13,10 +13,10 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.beOfType
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -27,7 +27,7 @@ class TextFieldViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     val testDispatcher = UnconfinedTestDispatcher()
 
-    val testScope = TestScope(testDispatcher)
+    val coroutineScope = CoroutineScope(testDispatcher)
 
     val userPreferencesRepository: UserPreferencesRepository = mockk {
         every { flowOfSelectAllTextOnTextFieldFocus() } returns kotlin.run {
@@ -188,7 +188,7 @@ class TextFieldViewModelTest {
 
     fun createSut() =
         TextFieldViewModel(
-            coroutineScope = testScope,
+            coroutineScope = coroutineScope,
             filterUserInput = { Text(it) },
             userPreferencesRepository = userPreferencesRepository,
             defaultDispatcher = testDispatcher,

@@ -15,6 +15,7 @@ import io.github.mmolosay.thecolor.presentation.details.ColorDetailsData.Initial
 import io.github.mmolosay.thecolor.presentation.errors.toErrorType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -48,6 +49,7 @@ class ColorDetailsViewModel @AssistedInject constructor(
     private val _dataStateFlow = MutableStateFlow<DataState>(DataState.Idle)
     val dataStateFlow = _dataStateFlow.asStateFlow()
 
+    private var fetchDataJob: Job? = null
     private var lastFetchDataCommand: ColorDetailsCommand.FetchData? = null
     private val colorHistory = mutableListOf<HistoryRecord>()
 
@@ -90,7 +92,8 @@ class ColorDetailsViewModel @AssistedInject constructor(
         colorRole: ColorRole?,
     ) {
         _dataStateFlow.value = DataState.Loading
-        coroutineScope.launch(ioDispatcher) {
+        fetchDataJob?.cancel()
+        fetchDataJob = coroutineScope.launch(ioDispatcher) {
             getColorDetails.invoke(color)
                 .onSuccess { domainDetails ->
                     setColorDetails(domainDetails, colorRole)

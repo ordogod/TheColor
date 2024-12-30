@@ -20,6 +20,7 @@ import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeViewModel.Data
 import io.github.mmolosay.thecolor.presentation.scheme.StatefulData.State
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -50,6 +51,7 @@ class ColorSchemeViewModel @AssistedInject constructor(
     @Named("ioDispatcher") private val ioDispatcher: CoroutineDispatcher,
 ) : SimpleViewModel(coroutineScope) {
 
+    private var fetchDataJob: Job? = null
     private var lastUsedSeed: Color? = null
     private var lastDomainColorScheme: DomainColorScheme? = null
 
@@ -85,7 +87,8 @@ class ColorSchemeViewModel @AssistedInject constructor(
         val requestConfig = assembleRequestConfig()
         val request = requestConfig.toDomainRequest(seed)
         _statefulDataFlow.updateState(State.Loading)
-        coroutineScope.launch(ioDispatcher) {
+        fetchDataJob?.cancel()
+        fetchDataJob = coroutineScope.launch(ioDispatcher) {
             getColorScheme(request)
                 .onSuccess { scheme ->
                     lastDomainColorScheme = scheme

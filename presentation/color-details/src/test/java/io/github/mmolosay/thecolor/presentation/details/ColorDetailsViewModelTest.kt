@@ -20,12 +20,14 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
@@ -99,7 +101,8 @@ class ColorDetailsViewModelTest {
             val color = mockk<Color.Hex>()
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
-            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(value = mockk())
+            val fetchedDetails: ColorDetails = mockk(relaxed = true)
+            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(fetchedDetails)
             every {
                 createDataMock(
                     details = any(),
@@ -143,7 +146,8 @@ class ColorDetailsViewModelTest {
             val color = mockk<Color.Hex>()
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
-            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(value = mockk())
+            val fetchedDetails: ColorDetails = mockk(relaxed = true)
+            coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(fetchedDetails)
             every {
                 createDataMock(
                     details = any(),
@@ -157,6 +161,54 @@ class ColorDetailsViewModelTest {
             commandFlow.emit(ColorDetailsCommand.FetchData(color, colorRole = null))
 
             sut.currentSeedDataFlow.value shouldNotBe null
+        }
+
+    @Test
+    fun `emission of 'fetch data' command cancells previous 'fetch data' job, so that repository is only accessed once`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
+            every { commandProvider.commandFlow } returns commandFlow
+            val fetchedDetails: ColorDetails = mockk(relaxed = true)
+            val getColorDetailsDeferred = CompletableDeferred<Result<ColorDetails>>()
+            coEvery {
+                getColorDetails.invoke(any<Color>())
+            } coAnswers {
+                getColorDetailsDeferred.await()
+            }
+            every {
+                createDataMock(
+                    details = any(),
+                    goToExactColor = any(),
+                    initialColor = any(),
+                    goToInitialColor = any(),
+                )
+            } returns mockk()
+            createSut()
+
+            kotlin.run emitFirstCommand@{
+                val command = ColorDetailsCommand.FetchData(
+                    color = mockk<Color.Hex>(), colorRole = null
+                )
+                commandFlow.emit(command)
+            }
+            kotlin.run emitSecondCommand@{
+                val command = ColorDetailsCommand.FetchData(
+                    color = mockk<Color.Hex>(), colorRole = null
+                )
+                commandFlow.emit(command)
+            }
+            getColorDetailsDeferred.complete(value = Result.Success(fetchedDetails))
+
+            // verify that component that is called deep inside 'fetchColorDetails()' is only called once:
+            // the first coroutine is cancelled thus it never goes deep enough to trigger this component.
+            coVerify(exactly = 1) {
+                createDataMock(
+                    details = any(),
+                    goToExactColor = any(),
+                    initialColor = any(),
+                    goToInitialColor = any(),
+                )
+            }
         }
 
     @Test
@@ -454,16 +506,17 @@ class ColorDetailsViewModelTest {
 
     fun createSut(
         createData: CreateColorDetailsDataUseCase = createDataMock,
+        coroutineDispatcher: CoroutineDispatcher = mainDispatcherRule.testDispatcher,
     ) =
         ColorDetailsViewModel(
-            coroutineScope = TestScope(context = mainDispatcherRule.testDispatcher),
+            coroutineScope = CoroutineScope(context = coroutineDispatcher),
             commandProvider = commandProvider,
             eventStore = eventStore,
             getColorDetails = getColorDetails,
             createData = createData,
             createSeedData = createSeedData,
-            ioDispatcher = mainDispatcherRule.testDispatcher,
-            defaultDispatcher = mainDispatcherRule.testDispatcher,
+            ioDispatcher = coroutineDispatcher,
+            defaultDispatcher = coroutineDispatcher,
         ).also {
             sut = it
         }

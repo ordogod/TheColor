@@ -30,7 +30,6 @@ import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeCommand
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeCommandStore
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeEvent
 import io.github.mmolosay.thecolor.utils.doNothing
-import io.github.mmolosay.thecolor.utils.firstPronto
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -340,7 +339,7 @@ class HomeViewModel @Inject constructor(
         kotlin.run invokeProceedExecutor@{
             val proceed = proceedExecutorFlow
                 .filterNotNull()
-                .firstPronto()
+                .first()
             proceed(
                 color = color,
                 colorRole = colorRole,
@@ -358,6 +357,11 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun setGoToSettingsNavEvent() {
+        /*
+         * Right now there's no logic in ViewModel that accompanies navigating to Settings.
+         * In a real app, here would've been a logic for accepting / denying UI's navigation request
+         * depending on the business logic. Here may also be sending data to analytics or logging.
+         */
         val event = HomeNavEvent.GoToSettings(
             onConsumed = ::clearNavEvent,
         )
@@ -389,7 +393,7 @@ class HomeViewModel @Inject constructor(
             canProceed = canProceed,
             proceedResult = null, // 'proceed' action wasn't invoked yet
             colorSchemeSelectedSwatchData = null, // no selected swatch initially
-            goToSettings = ::setGoToSettingsNavEvent,
+            requestToGoToSettings = ::setGoToSettingsNavEvent,
         )
     }
 

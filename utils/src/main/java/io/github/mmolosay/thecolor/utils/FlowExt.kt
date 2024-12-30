@@ -1,5 +1,8 @@
 package io.github.mmolosay.thecolor.utils
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
@@ -23,7 +26,15 @@ suspend fun <T> Flow<T>.firstWithTimeout(timeout: Duration): T {
 /**
  * A variation of [firstWithTimeout] with a short timeout.
  * This operator is designed to be used to get a value from a flow when the caller
- * expects it to be emitted promptly, e.g. due to the replay mechanism.
+ * expects it to be emitted promptly, e.g. due to the replay mechanism of `MutableFlow`.
+ *
+ * It is a [DelicateCoroutinesApi].
+ * The timeout may be a cause of malfunction when:
+ * 1. debugging and waiting on breakpoints, allowing the timeout to expire.
+ * 2. as underlying [withTimeout], it throws [TimeoutCancellationException].
+ * This exception derives from a [CancellationException], which considered as non-fatal.
+ * Thus, coroutine will be cancelled silently without propagating this exception to higher level.
  */
+@DelicateCoroutinesApi
 suspend fun <T> Flow<T>.firstPronto(): T =
     this.firstWithTimeout(10.milliseconds)
