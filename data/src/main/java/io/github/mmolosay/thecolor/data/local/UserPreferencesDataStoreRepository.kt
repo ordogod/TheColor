@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.mmolosay.thecolor.domain.model.ColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace
@@ -60,6 +61,11 @@ class UserPreferencesDataStoreRepository @Inject constructor(
     private val stateFlowOfSelectAllTextOnTextFieldFocus: StateFlow<SelectAllTextOnTextFieldFocus?> =
         dataStore.data
             .map { it.getSelectAllTextOnTextFieldFocus() }
+            .stateEagerlyInAppScope()
+
+    private val stateFlowOfAutoProceedWithRandomizedColors: StateFlow<AutoProceedWithRandomizedColors?> =
+        dataStore.data
+            .map { it.getAutoProceedWithRandomizedColors() }
             .stateEagerlyInAppScope()
 
     override fun flowOfColorInputType(): Flow<ColorInputType> =
@@ -210,6 +216,33 @@ class UserPreferencesDataStoreRepository @Inject constructor(
         }
     }
 
+    override fun flowOfAutoProceedWithRandomizedColors(): Flow<AutoProceedWithRandomizedColors> =
+        stateFlowOfAutoProceedWithRandomizedColors.filterNotNull()
+
+    private fun Preferences.getAutoProceedWithRandomizedColors(): AutoProceedWithRandomizedColors {
+        val dtoValue = this[DataStoreKeys.AutoProceedWithRandomizedColors]
+        return if (dtoValue != null) {
+            AutoProceedWithRandomizedColors(
+                enabled = dtoValue, // boolean stays boolean in both Data and Domain layers
+            )
+        } else {
+            DefaultUserPreferences.AutoProceedWithRandomizedColors
+        }
+    }
+
+    override suspend fun setAutoProceedWithRandomizedColors(value: AutoProceedWithRandomizedColors?) {
+        withContext(ioDispatcher) {
+            dataStore.edit { preferences ->
+                val key = DataStoreKeys.AutoProceedWithRandomizedColors
+                if (value != null) {
+                    preferences[key] = value.enabled
+                } else {
+                    preferences.remove(key)
+                }
+            }
+        }
+    }
+
     private fun <T> Flow<T>.stateEagerlyInAppScope(): StateFlow<T?> =
         this.stateIn(
             scope = appScope,
@@ -235,6 +268,9 @@ class UserPreferencesDataStoreRepository @Inject constructor(
 
         val SelectAllTextOnTextFieldFocus =
             booleanPreferencesKey("select_all_text_on_text_field_focus")
+
+        val AutoProceedWithRandomizedColors =
+            booleanPreferencesKey("auto_proceed_with_randomized_colors")
     }
 }
 

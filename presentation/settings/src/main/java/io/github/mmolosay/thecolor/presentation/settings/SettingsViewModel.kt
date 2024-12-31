@@ -2,7 +2,6 @@ package io.github.mmolosay.thecolor.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.asSingletonSet
 import io.github.mmolosay.thecolor.domain.repository.UserPreferencesRepository
@@ -17,6 +16,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors as DomainAutoProceedWithRandomizedColors
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup as DomainShouldResumeFromLastSearchedColorOnStartup
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus as DomainSelectAllTextOnTextFieldFocus
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace as DomainSmartBackspace
@@ -32,11 +32,14 @@ class SettingsViewModel @Inject constructor(
 
     val dataStateFlow: StateFlow<DataState> =
         combine(
-            userPreferencesRepository.flowOfColorInputType(),
-            userPreferencesRepository.flowOfAppUiColorSchemeSet(),
-            userPreferencesRepository.flowOfResumeFromLastSearchedColorOnStartup(),
-            userPreferencesRepository.flowOfSmartBackspace(),
-            userPreferencesRepository.flowOfSelectAllTextOnTextFieldFocus(),
+            listOf(
+                userPreferencesRepository.flowOfColorInputType(),
+                userPreferencesRepository.flowOfAppUiColorSchemeSet(),
+                userPreferencesRepository.flowOfResumeFromLastSearchedColorOnStartup(),
+                userPreferencesRepository.flowOfSmartBackspace(),
+                userPreferencesRepository.flowOfSelectAllTextOnTextFieldFocus(),
+                userPreferencesRepository.flowOfAutoProceedWithRandomizedColors(),
+            ),
             transform = ::createData,
         )
             .map { data -> DataState.Ready(data) }
@@ -87,9 +90,23 @@ class SettingsViewModel @Inject constructor(
 
     private fun updateAutoProceedWithRandomizedColorsEnablement(value: Boolean) {
         viewModelScope.launch(defaultDispatcher) {
-
+            val domainModel = DomainAutoProceedWithRandomizedColors(value)
+            userPreferencesRepository.setAutoProceedWithRandomizedColors(domainModel)
         }
     }
+
+    // that's the only way to combine() more than 5 flows of different types
+    private fun createData(
+        userSettings: Array<Any>,
+    ): SettingsData =
+        createData(
+            preferredColorInputType = userSettings[0] as DomainColorInputType,
+            appUiColorSchemeSet = userSettings[1] as DomainUiColorSchemeSet,
+            shouldResumeFromLastSearchedColorOnStartup = userSettings[2] as DomainShouldResumeFromLastSearchedColorOnStartup,
+            smartBackspace = userSettings[3] as DomainSmartBackspace,
+            selectAllTextOnTextFieldFocus = userSettings[4] as DomainSelectAllTextOnTextFieldFocus,
+            autoProceedWithRandomizedColors = userSettings[5] as DomainAutoProceedWithRandomizedColors,
+        )
 
     private fun createData(
         preferredColorInputType: DomainColorInputType,
@@ -97,6 +114,7 @@ class SettingsViewModel @Inject constructor(
         shouldResumeFromLastSearchedColorOnStartup: DomainShouldResumeFromLastSearchedColorOnStartup,
         smartBackspace: DomainSmartBackspace,
         selectAllTextOnTextFieldFocus: DomainSelectAllTextOnTextFieldFocus,
+        autoProceedWithRandomizedColors: DomainAutoProceedWithRandomizedColors,
     ): SettingsData {
         return SettingsData(
             resetPreferencesToDefault = ::resetPreferencesToDefault,
@@ -117,7 +135,7 @@ class SettingsViewModel @Inject constructor(
             isSelectAllTextOnTextFieldFocusEnabled = selectAllTextOnTextFieldFocus.enabled,
             changeSelectAllTextOnTextFieldFocusEnablement = ::updateSelectAllTextOnTextFieldFocusEnablement,
 
-            isAutoProceedWithRandomizedColorsEnabled = true,
+            isAutoProceedWithRandomizedColorsEnabled = autoProceedWithRandomizedColors.enabled,
             changeAutoProceedWithRandomizedColorsEnablement = ::updateAutoProceedWithRandomizedColorsEnablement,
         )
     }
