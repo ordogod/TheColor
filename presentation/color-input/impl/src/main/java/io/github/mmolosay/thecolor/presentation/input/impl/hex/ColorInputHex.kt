@@ -19,7 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
-import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.Loading
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.ProcessColorSubmissionResultAsSideEffect
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.TextField
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
@@ -40,7 +39,7 @@ fun ColorInputHex(
 
     when (state) {
         is DataState.BeingInitialized ->
-            Loading()
+            ColorInputHexLoading()
         is DataState.Ready -> {
             ColorInputHex(
                 data = state.data,
