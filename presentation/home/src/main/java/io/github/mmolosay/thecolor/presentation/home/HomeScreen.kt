@@ -273,6 +273,7 @@ private fun ButtonSection(
     randomizeColorButton: @Composable () -> Unit,
 ) {
     Row(
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = ButtonSectionHorizontalArrangement,
         verticalAlignment = Alignment.CenterVertically,
     ) {
