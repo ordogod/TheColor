@@ -83,11 +83,12 @@ class UserPreferencesDataStoreRepository @Inject constructor(
     override suspend fun setColorInputType(value: ColorInputType?) {
         withContext(ioDispatcher) {
             val dtoValue = with(ColorInputTypeMapper) { value?.toDtoString() }
+            val key = DataStoreKeys.ColorInputType
             dataStore.edit { preferences ->
                 if (dtoValue != null) {
-                    preferences[DataStoreKeys.ColorInputType] = dtoValue
+                    preferences[key] = dtoValue
                 } else {
-                    preferences.remove(DataStoreKeys.ColorInputType)
+                    preferences.remove(key)
                 }
             }
         }
@@ -154,11 +155,11 @@ class UserPreferencesDataStoreRepository @Inject constructor(
     override suspend fun setResumeFromLastSearchedColorOnStartup(value: ResumeFromLastSearchedColorOnStartup?) {
         withContext(ioDispatcher) {
             dataStore.edit { preferences ->
+                val key = DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup
                 if (value != null) {
-                    preferences[DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup] =
-                        value.enabled
+                    preferences[key] = value.enabled
                 } else {
-                    preferences.remove(DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup)
+                    preferences.remove(key)
                 }
             }
         }
@@ -181,10 +182,11 @@ class UserPreferencesDataStoreRepository @Inject constructor(
     override suspend fun setSmartBackspace(value: SmartBackspace?) {
         withContext(ioDispatcher) {
             dataStore.edit { preferences ->
+                val key = DataStoreKeys.SmartBackspace
                 if (value != null) {
-                    preferences[DataStoreKeys.SmartBackspace] = value.enabled
+                    preferences[key] = value.enabled
                 } else {
-                    preferences.remove(DataStoreKeys.SmartBackspace)
+                    preferences.remove(key)
                 }
             }
         }
@@ -206,11 +208,12 @@ class UserPreferencesDataStoreRepository @Inject constructor(
 
     override suspend fun setSelectAllTextOnTextFieldFocus(value: SelectAllTextOnTextFieldFocus?) {
         withContext(ioDispatcher) {
+            val key = DataStoreKeys.SelectAllTextOnTextFieldFocus
             dataStore.edit { preferences ->
                 if (value != null) {
-                    preferences[DataStoreKeys.SelectAllTextOnTextFieldFocus] = value.enabled
+                    preferences[key] = value.enabled
                 } else {
-                    preferences.remove(DataStoreKeys.SelectAllTextOnTextFieldFocus)
+                    preferences.remove(key)
                 }
             }
         }
