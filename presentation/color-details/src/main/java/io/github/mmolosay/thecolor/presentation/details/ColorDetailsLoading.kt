@@ -1,9 +1,5 @@
 package io.github.mmolosay.thecolor.presentation.details
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -26,8 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.LocalShimmerTheme
-import com.valentinilk.shimmer.defaultShimmerTheme
 import com.valentinilk.shimmer.shimmer
 import io.github.mmolosay.thecolor.presentation.design.LocalColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurface
@@ -42,32 +35,18 @@ import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
 internal fun ColorDetailsLoading(
     modifier: Modifier = Modifier,
 ) {
-    val shimmerTheme = defaultShimmerTheme.copy(
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 800,
-                easing = LinearEasing,
-                delayMillis = 200,
-            ),
-            repeatMode = RepeatMode.Restart,
-        ),
-    )
-    CompositionLocalProvider(
-        LocalShimmerTheme provides shimmerTheme,
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .padding(top = 12.dp)
+            .fillMaxWidth()
+            .shimmer(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(
-            modifier = modifier
-                .padding(horizontal = 16.dp)
-                .padding(top = 12.dp)
-                .fillMaxWidth()
-                .shimmer(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Headline()
+        Headline()
 
-            Spacer(modifier = Modifier.height(28.dp))
-            ColorTranslations()
-        }
+        Spacer(modifier = Modifier.height(28.dp))
+        ColorTranslations()
     }
 }
 
