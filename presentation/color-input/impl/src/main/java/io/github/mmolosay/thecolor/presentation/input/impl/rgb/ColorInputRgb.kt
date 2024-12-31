@@ -44,7 +44,7 @@ fun ColorInputRgb(
 
     when (state) {
         is DataState.BeingInitialized ->
-            Loading()
+            ColorInputRgbLoading()
         is DataState.Ready -> {
             ColorInputRgb(
                 data = state.data,
