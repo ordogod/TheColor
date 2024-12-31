@@ -3,6 +3,8 @@ package io.github.mmolosay.thecolor.domain.usecase
 import io.github.mmolosay.thecolor.domain.model.Color
 import io.github.mmolosay.thecolor.domain.model.ColorPrototype
 import javax.inject.Inject
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 /**
  * Creates instances of [Color].
@@ -31,5 +33,11 @@ class ColorFactory @Inject constructor(
             g = prototype.g!!,
             b = prototype.b!!,
         )
+    }
+
+    fun random(): Color {
+        val hexIntRange = 0..0xFFFFFF
+        val hexInt = Random.nextInt(hexIntRange)
+        return Color.Hex(value = hexInt)
     }
 }

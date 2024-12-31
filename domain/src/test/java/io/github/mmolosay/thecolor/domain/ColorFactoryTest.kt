@@ -4,7 +4,9 @@ import io.github.mmolosay.thecolor.domain.model.Color
 import io.github.mmolosay.thecolor.domain.model.ColorPrototype
 import io.github.mmolosay.thecolor.domain.usecase.ColorFactory
 import io.github.mmolosay.thecolor.domain.usecase.ColorPrototypeValidator
+import io.kotest.matchers.ints.shouldBeInRange
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Test
@@ -57,6 +59,16 @@ class ColorFactoryTest {
         val color = sut.from(prototype)
 
         color shouldBe Color.Rgb(0, 191, 255)
+    }
+
+    @Test
+    fun `random color is a valid color`() {
+        createSut()
+
+        val color = sut.random()
+        val intValue = color.shouldBeInstanceOf<Color.Hex>().value
+
+        intValue shouldBeInRange 0..0xFFFFFF
     }
 
     fun createSut() =
