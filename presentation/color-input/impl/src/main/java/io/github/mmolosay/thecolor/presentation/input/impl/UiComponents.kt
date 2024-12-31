@@ -49,14 +49,6 @@ import io.github.mmolosay.thecolor.presentation.input.impl.model.ColorSubmission
 internal object UiComponents {
 
     @Composable
-    fun Loading() =
-        CircularProgressIndicator(
-            modifier = Modifier
-                .fillMaxSize()
-                .wrapContentSize()
-        )
-
-    @Composable
     fun TextField(
         data: TextFieldData,
         strings: TextFieldUiStrings,

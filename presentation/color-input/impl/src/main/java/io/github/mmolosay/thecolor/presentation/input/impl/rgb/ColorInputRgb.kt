@@ -29,7 +29,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.impl.thenIf
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents
-import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.Loading
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.ProcessColorSubmissionResultAsSideEffect
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.onBackspace
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
