@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
@@ -31,6 +30,7 @@ import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurf
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
+import io.github.mmolosay.thecolor.presentation.impl.clipFullyRounded
 
 /**
  * Structurally repeats contents and arrangement of [ColorScheme].
@@ -88,7 +88,7 @@ private fun ModeSection() {
             modifier = Modifier
                 .height(20.dp)
                 .width(100.dp)
-                .clipFullRounded()
+                .clipFullyRounded()
                 .background(fill)
         )
 
@@ -124,7 +124,7 @@ private fun ModeChip(modifier: Modifier) {
     Box(
         modifier = modifier
             .height(30.dp)
-            .clipFullRounded()
+            .clipFullyRounded()
             .background(fill)
     )
 }
@@ -137,9 +137,6 @@ private val fill: Color
         .copy(alpha = fillAlpha)
 
 private const val fillAlpha = 0.30f
-
-private fun Modifier.clipFullRounded() =
-    clip(shape = RoundedCornerShape(percent = 100))
 
 @Preview
 @Composable

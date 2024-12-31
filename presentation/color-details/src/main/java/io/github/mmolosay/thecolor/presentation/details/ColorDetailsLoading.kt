@@ -11,13 +11,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,6 +25,7 @@ import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurf
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
+import io.github.mmolosay.thecolor.presentation.impl.clipFullyRounded
 
 /**
  * Structurally repeats contents and arrangement of [ColorDetails].
@@ -57,7 +56,7 @@ private fun Headline() {
             .height(60.dp)
             .widthIn(max = 400.dp)
             .fillMaxWidth(fraction = 0.60f)
-            .clipFullRounded()
+            .clipFullyRounded()
             .background(fill)
     )
 }
@@ -76,14 +75,14 @@ private fun ColorTranslations() {
                 modifier = Modifier
                     .height(20.dp)
                     .width(34.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
             Box(
                 modifier = Modifier
                     .height(20.dp)
                     .width(82.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
         }
@@ -96,14 +95,14 @@ private fun ColorTranslations() {
                 modifier = Modifier
                     .height(20.dp)
                     .width(38.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
             Box(
                 modifier = Modifier
                     .height(20.dp)
                     .width(96.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
         }
@@ -116,14 +115,14 @@ private fun ColorTranslations() {
                 modifier = Modifier
                     .height(20.dp)
                     .width(32.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
             Box(
                 modifier = Modifier
                     .height(20.dp)
                     .width(94.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
         }
@@ -136,14 +135,14 @@ private fun ColorTranslations() {
                 modifier = Modifier
                     .height(20.dp)
                     .width(34.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
             Box(
                 modifier = Modifier
                     .height(20.dp)
                     .width(96.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
         }
@@ -156,14 +155,14 @@ private fun ColorTranslations() {
                 modifier = Modifier
                     .height(20.dp)
                     .width(42.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
             Box(
                 modifier = Modifier
                     .height(20.dp)
                     .width(94.dp)
-                    .clipFullRounded()
+                    .clipFullyRounded()
                     .background(fill)
             )
         }
@@ -176,9 +175,6 @@ private val fill: Color
     get() = LocalColorsOnTintedSurface.current
         .accent
         .copy(alpha = 0.30f)
-
-private fun Modifier.clipFullRounded() =
-    clip(shape = RoundedCornerShape(percent = 100))
 
 @Preview
 @Composable
