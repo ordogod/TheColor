@@ -40,21 +40,19 @@ class ColorInputViewModel @AssistedInject constructor(
     private val _dataStateFlow = MutableStateFlow<DataState>(DataState.Loading)
     val dataStateFlow = _dataStateFlow.asStateFlow()
 
-    val hexViewModel: ColorInputHexViewModel by lazy {
+    val hexViewModel: ColorInputHexViewModel =
         hexViewModelFactory.create(
             coroutineScope = ViewModelCoroutineScope(parent = coroutineScope),
             mediator = mediator,
             eventStore = eventStore,
         )
-    }
 
-    val rgbViewModel: ColorInputRgbViewModel by lazy {
+    val rgbViewModel: ColorInputRgbViewModel =
         rgbViewModelFactory.create(
             coroutineScope = ViewModelCoroutineScope(parent = coroutineScope),
             mediator = mediator,
             eventStore = eventStore,
         )
-    }
 
     init {
         coroutineScope.launch(defaultDispatcher) {
