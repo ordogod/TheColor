@@ -8,4 +8,5 @@ import io.github.mmolosay.thecolor.domain.model.Color
  */
 interface GetColorLightnessUseCase {
     fun Color.hslLightness(): Float
+    fun Color.labLightness(): Float
 }
