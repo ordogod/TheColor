@@ -1,5 +1,6 @@
 package io.github.mmolosay.thecolor.presentation.input.impl.hex
 
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.Loading
@@ -67,7 +69,9 @@ fun ColorInputHex(
     }
 
     TextField(
-        modifier = Modifier.fillMaxWidth(0.5f),
+        modifier = Modifier
+            .defaultMinSize(minWidth = 180.dp)
+            .fillMaxWidth(0.5f),
         data = data.textField,
         strings = strings.textField,
         value = value,
