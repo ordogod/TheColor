@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import io.github.mmolosay.thecolor.presentation.details.ColorDetailsViewModel.DataState
 
 @OptIn(ExperimentalAnimationApi::class)
-@Suppress("SpellCheckingInspection")
 @Composable
 fun ColorDetailsCrossfade(
     actualDataState: DataState,

@@ -1,5 +1,6 @@
 package io.github.mmolosay.thecolor.presentation.input.impl.hex
 
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,9 +16,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
-import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.Loading
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.DataStateCrossfade
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.ProcessColorSubmissionResultAsSideEffect
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.TextField
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
@@ -32,18 +34,22 @@ fun ColorInputHex(
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorInputHexUiStrings(context) }
-    val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
+    val dataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
     val colorSubmissionResult =
         viewModel.colorSubmissionResultFlow.collectAsStateWithLifecycle().value
 
-    when (state) {
-        is DataState.BeingInitialized ->
-            Loading()
-        is DataState.Ready -> {
-            ColorInputHex(
-                data = state.data,
-                strings = strings,
-            )
+    DataStateCrossfade(
+        actualDataState = dataState,
+    ) { state ->
+        when (state) {
+            is DataState.BeingInitialized ->
+                ColorInputHexLoading()
+            is DataState.Ready -> {
+                ColorInputHex(
+                    data = state.data,
+                    strings = strings,
+                )
+            }
         }
     }
 
@@ -67,7 +73,9 @@ fun ColorInputHex(
     }
 
     TextField(
-        modifier = Modifier.fillMaxWidth(0.5f),
+        modifier = Modifier
+            .defaultMinSize(minWidth = 180.dp)
+            .fillMaxWidth(0.5f),
         data = data.textField,
         strings = strings.textField,
         value = value,

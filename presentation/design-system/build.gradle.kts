@@ -49,4 +49,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("com.google.android.material:material:1.12.0") // for XML theme
+
+    // Misc (preserve alphabetical order)
+    implementation("com.valentinilk.shimmer:compose-shimmer:${libs.versions.valentinilkShimmer.get()}")
 }

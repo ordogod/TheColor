@@ -24,7 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.impl.thenIf
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents
-import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.Loading
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.DataStateCrossfade
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.ProcessColorSubmissionResultAsSideEffect
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.onBackspace
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
@@ -38,18 +38,22 @@ fun ColorInputRgb(
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorInputRgbUiStrings(context) }
-    val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
+    val dataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
     val colorSubmissionResult =
         viewModel.colorSubmissionResultFlow.collectAsStateWithLifecycle().value
 
-    when (state) {
-        is DataState.BeingInitialized ->
-            Loading()
-        is DataState.Ready -> {
-            ColorInputRgb(
-                data = state.data,
-                strings = strings,
-            )
+    DataStateCrossfade(
+        actualDataState = dataState,
+    ) { state ->
+        when (state) {
+            is DataState.BeingInitialized ->
+                ColorInputRgbLoading()
+            is DataState.Ready -> {
+                ColorInputRgb(
+                    data = state.data,
+                    strings = strings,
+                )
+            }
         }
     }
 

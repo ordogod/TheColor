@@ -39,21 +39,21 @@ fun ColorDetails(
     viewModel: ColorDetailsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
+    val dataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
     ColorDetails(
-        state = state,
+        dataState = dataState,
         modifier = modifier,
     )
 }
 
 @Composable
 fun ColorDetails(
-    state: DataState,
+    dataState: DataState,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorDetailsUiStrings(context) }
-    when (state) {
+    when (dataState) {
         is DataState.Idle -> {
             doNothing() // Color Details shouldn't be visible at Home at this point
         }
@@ -62,13 +62,13 @@ fun ColorDetails(
         }
         is DataState.Ready -> {
             ColorDetails(
-                data = state.data,
+                data = dataState.data,
                 strings = strings,
                 modifier = modifier,
             )
         }
         is DataState.Error -> {
-            Error(error = state.error)
+            Error(error = dataState.error)
         }
     }
 }

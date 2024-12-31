@@ -69,27 +69,28 @@ import io.github.mmolosay.thecolor.presentation.errors.message
 import io.github.mmolosay.thecolor.presentation.errors.rememberDefaultErrorsUiStrings
 import io.github.mmolosay.thecolor.presentation.impl.toCompose
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeViewModel.DataState
+import io.github.mmolosay.thecolor.utils.doNothing
 import io.github.mmolosay.thecolor.domain.model.ColorScheme as DomainColorScheme
 
 @Composable
 fun ColorScheme(
-    state: DataState,
+    dataState: DataState,
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorSchemeUiStrings(context) }
-    when (state) {
+    when (dataState) {
         is DataState.Idle ->
-            Unit // Color Details shouldn't be visible at Home at this point
+            doNothing() // Color Details shouldn't be visible at Home at this point
         is DataState.Loading ->
             ColorSchemeLoading()
         is DataState.Ready -> {
             ColorScheme(
-                data = state.data,
+                data = dataState.data,
                 strings = strings,
             )
         }
         is DataState.Error ->
-            Error(error = state.error)
+            Error(error = dataState.error)
     }
 }
 
