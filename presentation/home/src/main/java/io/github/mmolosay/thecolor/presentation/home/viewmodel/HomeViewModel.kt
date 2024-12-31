@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mmolosay.thecolor.domain.model.Color
 import io.github.mmolosay.thecolor.domain.repository.LastSearchedColorRepository
 import io.github.mmolosay.thecolor.domain.repository.UserPreferencesRepository
+import io.github.mmolosay.thecolor.domain.usecase.ColorFactory
 import io.github.mmolosay.thecolor.domain.usecase.IsColorLightUseCase
 import io.github.mmolosay.thecolor.presentation.api.ColorToColorIntUseCase
 import io.github.mmolosay.thecolor.presentation.api.ViewModelCoroutineScope
@@ -70,6 +71,7 @@ class HomeViewModel @Inject constructor(
     private val doesColorBelongToSession: DoesColorBelongToSessionUseCase,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val lastSearchedColorRepository: LastSearchedColorRepository,
+    private val colorFactory: ColorFactory,
     @Named("defaultDispatcher") private val defaultDispatcher: CoroutineDispatcher,
     @Named("uiDataUpdateDispatcher") private val uiDataUpdateDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
@@ -356,6 +358,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun randomizeColor() {
+        val color = colorFactory.random()
+        viewModelScope.launch(defaultDispatcher) {
+            sendColorToColorInput(color)
+        }
+    }
+
     private fun setGoToSettingsNavEvent() {
         /*
          * Right now there's no logic in ViewModel that accompanies navigating to Settings.
@@ -392,6 +401,7 @@ class HomeViewModel @Inject constructor(
         return HomeData(
             canProceed = canProceed,
             proceedResult = null, // 'proceed' action wasn't invoked yet
+            randomizeColor = ::randomizeColor,
             colorSchemeSelectedSwatchData = null, // no selected swatch initially
             requestToGoToSettings = ::setGoToSettingsNavEvent,
         )

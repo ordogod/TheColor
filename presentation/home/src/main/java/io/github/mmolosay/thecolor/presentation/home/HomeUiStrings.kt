@@ -12,6 +12,7 @@ data class HomeUiStrings(
     val settingsIconContentDesc: String,
     val headline: String,
     val proceedButtonText: String,
+    val randomizeButtonIconContentDesc: String,
     val invalidSubmittedColorMessage: String,
 )
 
@@ -20,5 +21,6 @@ fun HomeUiStrings(context: Context) =
         settingsIconContentDesc = context.getString(R.string.home_settings_icon_content_desc),
         headline = context.getString(R.string.home_headline),
         proceedButtonText = context.getString(R.string.home_proceed_btn),
+        randomizeButtonIconContentDesc = context.getString(R.string.home_randomize_color_button_icon_content_desc),
         invalidSubmittedColorMessage = context.getString(R.string.home_invalid_color_message),
     )
