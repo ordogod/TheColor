@@ -38,12 +38,12 @@ fun ColorInputRgb(
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorInputRgbUiStrings(context) }
-    val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
+    val dataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
     val colorSubmissionResult =
         viewModel.colorSubmissionResultFlow.collectAsStateWithLifecycle().value
 
     DataStateCrossfade(
-        actualDataState = state,
+        actualDataState = dataState,
     ) { state ->
         when (state) {
             is DataState.BeingInitialized ->

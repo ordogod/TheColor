@@ -116,7 +116,7 @@ private fun Content(
             actualDataState = colorDetailsDataState,
         ) { state ->
             ColorDetails(
-                state = state,
+                dataState = state,
                 modifier = Modifier
                     .padding(bottom = 24.dp) // just looks better this way
                     .padding(windowInsets.asPaddingValues())
