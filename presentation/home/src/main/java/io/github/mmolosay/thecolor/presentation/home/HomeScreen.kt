@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -432,9 +433,10 @@ private fun SelectedSwatchDetailsDialogContainer(
  * Places first element right in the center of the container.
  * Places rest elements after the first one.
  */
+@Immutable
 private object ButtonSectionHorizontalArrangement : Arrangement.Horizontal {
 
-    private val SpaceInBetween = 8.dp
+    override val spacing = 8.dp
 
     override fun Density.arrange(
         totalSize: Int,
@@ -452,9 +454,9 @@ private object ButtonSectionHorizontalArrangement : Arrangement.Horizontal {
         }
         val sizesWithIndicesWithoutFirstChild = sizesWithIndices.drop(1)
         var endOfLastPlacedChild = firstChildPos + firstChildSize
-        val spaceInBetweenPx = SpaceInBetween.roundToPx()
+        val spacingPx = spacing.roundToPx()
         sizesWithIndicesWithoutFirstChild.forEach { (index, size) ->
-            val startOfThisChild = endOfLastPlacedChild + spaceInBetweenPx
+            val startOfThisChild = endOfLastPlacedChild + spacingPx
             outPositions[index] = startOfThisChild
             endOfLastPlacedChild = startOfThisChild + size
         }
