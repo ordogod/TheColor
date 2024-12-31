@@ -445,7 +445,6 @@ private object ButtonSectionHorizontalArrangement : Arrangement.Horizontal {
         layoutDirection: LayoutDirection,
         outPositions: IntArray,
     ) {
-        // TODO: consider layoutDirection
         val firstChildSize = sizes.firstOrNull() ?: return
         val firstChildPos = (totalSize / 2) - (firstChildSize / 2)
         outPositions[0] = firstChildPos
@@ -454,12 +453,21 @@ private object ButtonSectionHorizontalArrangement : Arrangement.Horizontal {
             index to size
         }
         val sizesWithIndicesWithoutFirstChild = sizesWithIndices.drop(1)
-        var endOfLastPlacedChild = firstChildPos + firstChildSize
         val spacingPx = spacing.roundToPx()
+        var endOfLastPlacedChild = when (layoutDirection) {
+            LayoutDirection.Ltr -> firstChildPos + firstChildSize
+            LayoutDirection.Rtl -> firstChildPos
+        }
         sizesWithIndicesWithoutFirstChild.forEach { (index, size) ->
-            val startOfThisChild = endOfLastPlacedChild + spacingPx
-            outPositions[index] = startOfThisChild
-            endOfLastPlacedChild = startOfThisChild + size
+            val pos = when (layoutDirection) {
+                LayoutDirection.Ltr -> endOfLastPlacedChild + spacingPx
+                LayoutDirection.Rtl -> endOfLastPlacedChild - spacingPx - size
+            }
+            outPositions[index] = pos
+            endOfLastPlacedChild = when (layoutDirection) {
+                LayoutDirection.Ltr -> pos + size
+                LayoutDirection.Rtl -> pos
+            }
         }
     }
 }
