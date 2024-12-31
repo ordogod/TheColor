@@ -218,6 +218,7 @@ fun Home(
         Spacer(modifier = Modifier.height(16.dp))
         colorInput()
 
+        Spacer(modifier = Modifier.height(8.dp))
         ButtonSection(
             proceedButton = {
                 ProceedButton(
