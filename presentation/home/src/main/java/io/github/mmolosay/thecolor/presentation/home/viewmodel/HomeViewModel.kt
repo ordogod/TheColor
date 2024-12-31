@@ -362,6 +362,17 @@ class HomeViewModel @Inject constructor(
         val color = colorFactory.random()
         viewModelScope.launch(defaultDispatcher) {
             sendColorToColorInput(color)
+            val shouldProceed = userPreferencesRepository
+                .flowOfAutoProceedWithRandomizedColors()
+                .first()
+                .enabled
+            if (shouldProceed) {
+                proceed(
+                    color = color,
+                    colorRole = null,
+                    isNewColorCenterSession = true,
+                )
+            }
         }
     }
 

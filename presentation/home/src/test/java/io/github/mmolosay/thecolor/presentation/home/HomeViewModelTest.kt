@@ -61,6 +61,7 @@ import org.junit.Rule
 import org.junit.Test
 import javax.inject.Provider
 import io.github.mmolosay.thecolor.domain.model.ColorDetails as DomainColorDetails
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors as DomainAutoProceedWithRandomizedColors
 
 class HomeViewModelTest {
 
@@ -834,12 +835,38 @@ class HomeViewModelTest {
             every { colorSchemeEventStore.eventFlow } returns emptyFlow()
             val randomColor: Color.Hex = mockk()
             every { colorFactory.random() } returns randomColor
+            val featureValue = DomainAutoProceedWithRandomizedColors(enabled = false)
+            every { userPreferencesRepository.flowOfAutoProceedWithRandomizedColors() } returns MutableStateFlow(featureValue)
             createSut()
 
             data.randomizeColor()
 
-            coVerify (exactly = 1) {
+            coVerify(exactly = 1) {
                 colorInputMediator.send(color = randomColor, from = null)
+            }
+        }
+
+    @Test
+    fun `invoking 'randomize color' proceeds with it if 'auto proceed with randomized colors' feature is enabled`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val colorFlow = MutableStateFlow<Color?>(null)
+            every { colorInputColorStore.colorFlow } returns colorFlow
+            every { colorInputEventStore.eventFlow } returns emptyFlow()
+            every { colorDetailsEventStore.eventFlow } returns emptyFlow()
+            every { colorSchemeEventStore.eventFlow } returns emptyFlow()
+            val randomColor: Color.Hex = mockk()
+            every { colorFactory.random() } returns randomColor
+            val featureValue = DomainAutoProceedWithRandomizedColors(enabled = true)
+            every { userPreferencesRepository.flowOfAutoProceedWithRandomizedColors() } returns MutableStateFlow(featureValue)
+            every { createColorData(color = any()) } returns mockk()
+            createSut()
+
+            data.randomizeColor()
+            // emit generated random color from color flow as 'ColorInputMediator' would've done
+            colorFlow.emit(randomColor)
+
+            coVerify(exactly = 1) {
+                proceedExecutor.invoke(color = randomColor, colorRole = null)
             }
         }
 
