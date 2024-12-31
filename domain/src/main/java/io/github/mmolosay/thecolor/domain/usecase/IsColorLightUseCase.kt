@@ -8,7 +8,7 @@ class IsColorLightUseCase @Inject constructor(
 ) {
 
     fun Color.isLight(threshold: Float = 0.60f): Boolean {
-        val lightness = with(getColorLightness) { hslLightness() }
+        val lightness = with(getColorLightness) { labLightness() }
         return (lightness >= threshold)
     }
 }
