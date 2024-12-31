@@ -1,10 +1,5 @@
 package io.github.mmolosay.thecolor.presentation.input.impl.hex
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
@@ -24,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.DataStateCrossfade
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.ProcessColorSubmissionResultAsSideEffect
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.TextField
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
@@ -32,7 +28,6 @@ import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.T
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ColorInputHex(
     viewModel: ColorInputHexViewModel,
@@ -43,17 +38,8 @@ fun ColorInputHex(
     val colorSubmissionResult =
         viewModel.colorSubmissionResultFlow.collectAsStateWithLifecycle().value
 
-    val transition = updateTransition(
-        targetState = state,
-        label = "data state cross-fade",
-    )
-    val animationSpec = tween<Float>(
-        durationMillis = 500,
-        easing = FastOutSlowInEasing,
-    )
-    transition.Crossfade(
-        animationSpec = animationSpec,
-        contentKey = { it::class }, // don't animate when 'DataState' type stays the same
+    DataStateCrossfade(
+        actualDataState = state,
     ) { state ->
         when (state) {
             is DataState.BeingInitialized ->

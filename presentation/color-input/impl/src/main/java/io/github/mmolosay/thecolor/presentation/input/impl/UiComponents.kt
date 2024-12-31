@@ -1,17 +1,19 @@
 package io.github.mmolosay.thecolor.presentation.input.impl
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -42,6 +44,7 @@ import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.TrailingButton
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.model.ColorSubmissionResult
+import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
 
 /**
  * Reusable UI components for Color Input Views.
@@ -110,6 +113,27 @@ internal object UiComponents {
             val new = old.copy(text = newText, selection = newSelection)
             onValueChange(new)
         }
+    }
+
+    @OptIn(ExperimentalAnimationApi::class)
+    @Composable
+    fun <T> DataStateCrossfade(
+        actualDataState: DataState<T>,
+        content: @Composable (targetState: DataState<T>) -> Unit,
+    ) {
+        val transition = updateTransition(
+            targetState = actualDataState,
+            label = "data state cross-fade",
+        )
+        val animationSpec = tween<Float>(
+            durationMillis = 500,
+            easing = FastOutSlowInEasing,
+        )
+        transition.Crossfade(
+            animationSpec = animationSpec,
+            contentKey = { it::class }, // don't animate when 'DataState' type stays the same,
+            content = content,
+        )
     }
 
     @Composable
