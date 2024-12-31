@@ -24,4 +24,7 @@ data class SettingsData(
 
     val isSelectAllTextOnTextFieldFocusEnabled: Boolean,
     val changeSelectAllTextOnTextFieldFocusEnablement: (Boolean) -> Unit,
+
+    val isAutoProceedWithRandomizedColorsEnabled: Boolean,
+    val changeAutoProceedWithRandomizedColorsEnablement: (Boolean) -> Unit,
 )

@@ -42,4 +42,9 @@ object UserPreferences {
     value class SelectAllTextOnTextFieldFocus(
         val enabled: Boolean,
     )
+
+    @JvmInline
+    value class AutoProceedWithRandomizedColors(
+        val enabled: Boolean,
+    )
 }

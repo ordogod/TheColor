@@ -2,7 +2,6 @@ package io.github.mmolosay.thecolor.domain.repository
 
 import io.github.mmolosay.thecolor.domain.model.ColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences
-import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus
 
 /**
  * Stores default values of user preferences.
@@ -23,5 +22,8 @@ object DefaultUserPreferences {
         UserPreferences.SmartBackspace(enabled = true)
 
     val SelectAllTextOnTextFieldFocus =
-        SelectAllTextOnTextFieldFocus(enabled = false)
+        UserPreferences.SelectAllTextOnTextFieldFocus(enabled = false)
+
+    val AutoProceedWithRandomizedColors =
+        UserPreferences.AutoProceedWithRandomizedColors(enabled = true)
 }

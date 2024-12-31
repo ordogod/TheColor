@@ -2,8 +2,10 @@ package io.github.mmolosay.thecolor.presentation.home
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -12,14 +14,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Casino
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,8 +52,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -154,7 +162,6 @@ fun HomeScreen(
             colorInput = colorInput,
             colorPreview = colorPreview,
             colorCenter = colorCenter,
-            navigateToSettings = navigateToSettings,
             navBarAppearanceController = navBarAppearanceController,
         )
     }
@@ -179,7 +186,6 @@ fun Home(
     colorInput: @Composable () -> Unit,
     colorPreview: @Composable () -> Unit,
     colorCenter: @Composable () -> Unit,
-    navigateToSettings: () -> Unit,
     navBarAppearanceController: NavBarAppearanceController,
     modifier: Modifier = Modifier,
 ) {
@@ -213,10 +219,21 @@ fun Home(
         Spacer(modifier = Modifier.height(16.dp))
         colorInput()
 
-        ProceedButton(
-            onClick = (data.canProceed as? HomeData.CanProceed.Yes)?.proceed ?: ::doNothing,
-            enabled = (data.canProceed is HomeData.CanProceed.Yes),
-            text = strings.proceedButtonText,
+        Spacer(modifier = Modifier.height(8.dp))
+        ButtonSection(
+            proceedButton = {
+                ProceedButton(
+                    onClick = (data.canProceed as? HomeData.CanProceed.Yes)?.proceed ?: ::doNothing,
+                    enabled = (data.canProceed is HomeData.CanProceed.Yes),
+                    text = strings.proceedButtonText,
+                )
+            },
+            randomizeColorButton = {
+                RandomizeColorButton(
+                    onClick = data.randomizeColor,
+                    iconContentDesc = strings.randomizeButtonIconContentDesc,
+                )
+            },
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -251,6 +268,21 @@ fun Home(
 }
 
 @Composable
+private fun ButtonSection(
+    proceedButton: @Composable () -> Unit,
+    randomizeColorButton: @Composable () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = ButtonSectionHorizontalArrangement,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        proceedButton()
+        randomizeColorButton()
+    }
+}
+
+@Composable
 private fun ProceedButton(
     onClick: () -> Unit,
     enabled: Boolean,
@@ -268,6 +300,22 @@ private fun ProceedButton(
         enabled = enabled,
     ) {
         Text(text = text)
+    }
+}
+
+@Composable
+private fun RandomizeColorButton(
+    onClick: () -> Unit,
+    iconContentDesc: String,
+) {
+    FilledTonalIconButton(
+        onClick = onClick,
+    ) {
+        Icon(
+            modifier = Modifier.size(20.dp),
+            imageVector = Icons.Outlined.Casino,
+            contentDescription = iconContentDesc,
+        )
     }
 }
 
@@ -381,6 +429,49 @@ private fun SelectedSwatchDetailsDialogContainer(
     }
 }
 
+/**
+ * An [Arrangement] for [ButtonSection].
+ * Places first element right in the center of the container.
+ * Places rest elements after the first one.
+ */
+@Immutable
+private object ButtonSectionHorizontalArrangement : Arrangement.Horizontal {
+
+    override val spacing = 8.dp
+
+    override fun Density.arrange(
+        totalSize: Int,
+        sizes: IntArray,
+        layoutDirection: LayoutDirection,
+        outPositions: IntArray,
+    ) {
+        val firstChildSize = sizes.firstOrNull() ?: return
+        val firstChildPos = (totalSize / 2) - (firstChildSize / 2)
+        outPositions[0] = firstChildPos
+        if (sizes.size == 1) return
+        val sizesWithIndices = sizes.mapIndexed { index, size ->
+            index to size
+        }
+        val sizesWithIndicesWithoutFirstChild = sizesWithIndices.drop(1)
+        val spacingPx = spacing.roundToPx()
+        var endOfLastPlacedChild = when (layoutDirection) {
+            LayoutDirection.Ltr -> firstChildPos + firstChildSize
+            LayoutDirection.Rtl -> firstChildPos
+        }
+        sizesWithIndicesWithoutFirstChild.forEach { (index, size) ->
+            val pos = when (layoutDirection) {
+                LayoutDirection.Ltr -> endOfLastPlacedChild + spacingPx
+                LayoutDirection.Rtl -> endOfLastPlacedChild - spacingPx - size
+            }
+            outPositions[index] = pos
+            endOfLastPlacedChild = when (layoutDirection) {
+                LayoutDirection.Ltr -> pos + size
+                LayoutDirection.Rtl -> pos
+            }
+        }
+    }
+}
+
 private class ColorCenterLifecycleObserver(
     private val navBarAppearanceController: NavBarAppearanceController,
     private val appearance: NavBarAppearance,
@@ -453,6 +544,7 @@ private fun previewData() =
                 isDark = true,
             ),
         ),
+        randomizeColor = {},
         colorSchemeSelectedSwatchData = null,
         requestToGoToSettings = {},
     )
@@ -462,5 +554,6 @@ private fun previewUiStrings() =
         settingsIconContentDesc = "Go to Settings",
         headline = "Find your color",
         proceedButtonText = "Proceed",
+        randomizeButtonIconContentDesc = "Randomize color",
         invalidSubmittedColorMessage = "Please enter a valid color",
     )

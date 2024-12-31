@@ -9,6 +9,7 @@ import io.github.mmolosay.thecolor.presentation.details.ColorDetailsViewModel
 data class HomeData(
     val canProceed: CanProceed,
     val proceedResult: ProceedResult?,
+    val randomizeColor: () -> Unit,
     val colorSchemeSelectedSwatchData: ColorSchemeSelectedSwatchData?,
     val requestToGoToSettings: () -> Unit,
 ) {
