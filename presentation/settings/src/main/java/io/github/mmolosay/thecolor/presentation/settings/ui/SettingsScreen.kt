@@ -268,6 +268,15 @@ fun Settings(
                 onCheckedChange = data.changeSelectAllTextOnTextFieldFocusEnablement,
             )
         }
+
+        item("auto proceed with randomized colors") {
+            AutoProceedWithRandomizedColors(
+                title = strings.itemAutoProceedWithRandomizedColorsTitle,
+                description = strings.itemAutoProceedWithRandomizedColorsDesc,
+                checked = data.isAutoProceedWithRandomizedColorsEnabled,
+                onCheckedChange = data.changeAutoProceedWithRandomizedColorsEnablement,
+            )
+        }
     }
 }
 
@@ -343,4 +352,7 @@ private fun previewData() =
 
         isSelectAllTextOnTextFieldFocusEnabled = true,
         changeSelectAllTextOnTextFieldFocusEnablement = {},
+
+        isAutoProceedWithRandomizedColorsEnabled = true,
+        changeAutoProceedWithRandomizedColorsEnablement = {},
     )

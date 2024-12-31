@@ -32,6 +32,8 @@ data class SettingsUiStrings(
     val itemSmartBackspaceDesc: String,
     val itemSelectAllTextOnTextFieldFocusTitle: String,
     val itemSelectAllTextOnTextFieldFocusDesc: String,
+    val itemAutoProceedWithRandomizedColorsTitle: String,
+    val itemAutoProceedWithRandomizedColorsDesc: String,
 )
 
 fun SettingsUiStrings(context: Context) =
@@ -59,4 +61,6 @@ fun SettingsUiStrings(context: Context) =
         itemSmartBackspaceDesc = context.getString(R.string.settings_item_smart_backspace_desc),
         itemSelectAllTextOnTextFieldFocusTitle = context.getString(R.string.settings_item_select_all_text_on_text_field_focus_title),
         itemSelectAllTextOnTextFieldFocusDesc = context.getString(R.string.settings_item_select_all_text_on_text_field_focus_desc),
+        itemAutoProceedWithRandomizedColorsTitle = context.getString(R.string.settings_item_auto_proceed_with_randomized_colors_title),
+        itemAutoProceedWithRandomizedColorsDesc = context.getString(R.string.settings_item_auto_proceed_with_randomized_colors_desc),
     )

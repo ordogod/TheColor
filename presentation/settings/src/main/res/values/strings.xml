@@ -31,4 +31,7 @@
     <string name="settings_item_select_all_text_on_text_field_focus_title">Select all text on focus</string>
     <string name="settings_item_select_all_text_on_text_field_focus_desc">Select all text in a text field when it gets focused.</string>
 
+    <string name="settings_item_auto_proceed_with_randomized_colors_title">Auto proceed with randomized colors</string>
+    <string name="settings_item_auto_proceed_with_randomized_colors_desc">Randomizing a color will automatically show Color Center.</string>
+
 </resources>

@@ -2,6 +2,7 @@ package io.github.mmolosay.thecolor.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.asSingletonSet
 import io.github.mmolosay.thecolor.domain.repository.UserPreferencesRepository
@@ -84,6 +85,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private fun updateAutoProceedWithRandomizedColorsEnablement(value: Boolean) {
+        viewModelScope.launch(defaultDispatcher) {
+
+        }
+    }
+
     private fun createData(
         preferredColorInputType: DomainColorInputType,
         appUiColorSchemeSet: DomainUiColorSchemeSet,
@@ -109,6 +116,9 @@ class SettingsViewModel @Inject constructor(
 
             isSelectAllTextOnTextFieldFocusEnabled = selectAllTextOnTextFieldFocus.enabled,
             changeSelectAllTextOnTextFieldFocusEnablement = ::updateSelectAllTextOnTextFieldFocusEnablement,
+
+            isAutoProceedWithRandomizedColorsEnabled = true,
+            changeAutoProceedWithRandomizedColorsEnablement = ::updateAutoProceedWithRandomizedColorsEnablement,
         )
     }
 
