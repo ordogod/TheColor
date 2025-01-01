@@ -4,6 +4,10 @@
 # TheColor
 Cutting-edge native Android app about each and every known color.
 
+<img src="https://github.com/user-attachments/assets/a8caba45-7b72-484b-a68c-eed6ce9dab11" width="200" alt="Screenshot 01-01-2025" />
+<img src="https://github.com/user-attachments/assets/c625e8ca-a294-4e24-9c75-c5cb6b73231c" width="200" alt="Screenshot 01-01-2025" />
+<img src="https://github.com/user-attachments/assets/feff3c7c-172e-4410-a55c-1caf9284ba81" width="200" alt="Screenshot 01-01-2025" />
+
 ## Table of Contents
 
 * [What is it](#what-is-it)
