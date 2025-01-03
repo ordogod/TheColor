@@ -150,7 +150,7 @@ There are some curious places in the code architecture-wise, like accessing `Rep
 Each feature or themed clump of code is located in its own Gradle module. This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
 
 ### Single `Activity` approach 
-Activities in Android are somewhat expensive to create in terms of processing power. That's why it is recommended to have only one `Activity`, that will house all UI of the app.
+Activities in Android are somewhat expensive to create in terms of processing power. That's why it is recommended to have only one `Activity` that will house all UI of the app.
 
 ### Event-Command approach
 Allows to create highly reusable features and components. Introduces terms *Event* and *Command*.
@@ -163,5 +163,7 @@ Allows to create highly reusable features and components. Introduces terms *Even
 Platform-agnostic ViewModels, free from Android SDK and UI framework dependencies, improve reusability, testability, and maintainability. 
 
 Decoupling from Android SDK significantly simplifies unit tests, removing the need to have Robolectric to recreate components like `Context` that are present only on real devices.
+
 Freeing from dependencies of specific UI framework keeps ViewModels more stable and protected from changes in the future. Opting in for using Kotlin `Flow` instead of `State` from Jetpack Compose will save your ViewModels from changes if one day you decide to change a UI framework.
+
 Exposing platform-agnostic models from ViewModels enables latter to be used in UI implemented with any framework.
