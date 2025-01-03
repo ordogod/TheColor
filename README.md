@@ -13,12 +13,22 @@ Cutting-edge native Android app about each and every known color.
 ## Table of Contents
 
 * [What is it](#what-is-it)
+* [Who is it for](#who-is-it-for)
 * [App features](#app-features)
 * [Software approaches](#software-approaches)
 
 -----
 
 ## What is it
+
+This is a native Android application about colors.
+You can search for a specific color or generate a random one.
+Explore detailed color information and create custom color schemes with the color scheme builder.
+
+The app is powered by [The Color API](https://github.com/joshbeckman/thecolorapi).
+For a full list of features, check out the [App Features](#app-features) section.
+
+## Who is it for
 
 This project showcases my expertise in developing software in general and
 native Android apps in specific.
