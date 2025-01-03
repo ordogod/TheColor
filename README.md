@@ -138,3 +138,29 @@ Generating a new random color on *Home* screen will automatically proceed with i
 - UI: Jetpack Compose, Compose Navigation, Material 3
 - Unit testing: JUnit 4, MockK, Kotlin Assertions
 - Also: [Debounce](https://github.com/mmolosay/debounce), [Colormath](https://github.com/ajalt/colormath), [Compose Shimmer](https://github.com/valentinilk/compose-shimmer)
+
+## Software approaches
+
+### Clean Architecture
+Clean architecture straight from Robert Martin's book. The app has 3 layers: domain, data and presentation. Domain layer is the most important and sensitive one, thus it's the most high-level and doesn't depend on other layers. Data layer retrieves and stores data used by domain layer. Presentation layer contains user interface (GUI in particular).
+There are some curious places in the code architecture-wise, like accessing `Repositories` directly from Presentation and implementing use cases in Data layer. I'm giving you the opportunity to find them in code and make sense of them.
+
+### Gradle modularization
+Each feature or themed clump of code is located in its own Gradle module. This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
+
+### Single `Activity` approach 
+Activities in Android are somewhat expensive to create in terms of processing power. That's why it is recommended to have only one `Activity`, that will house all UI of the app.
+
+### Event-Command approach
+Allows to create highly reusable features and components. Introduces terms *Event* and *Command*.
+
+*Event* is something that originates inside component (feature) and is destined to be broadcast to the outside (hosting components: clients). An example of the event in the app is selecting a color swatch in *Color Scheme* feature. When the *Color Scheme* is located on *Home* screen, it will open a *Color Details* dialog for the selected color. The *Home* screen decides how to react to the event of selecting a color swatch. This allows to define any behaviour depending on the context where *Color Scheme* is used. For example, in other place selecting a color swatch will open a web browser.
+
+*Command* originates in the outside of the component and destined to be processed (handled, executed, reacted to) by the component itself. An example of the command in the app is fetching data in *Color Details* once the color is proceeded with. *Home* screen sends a command "fetch data for this color" to *Color Details*, and the latter obeys.
+
+### Platform-agnostic `ViewModel`s
+Platform-agnostic ViewModels, free from Android SDK and UI framework dependencies, improve reusability, testability, and maintainability. 
+
+Decoupling from Android SDK significantly simplifies unit tests, removing the need to have Robolectric to recreate components like `Context` that are present only on real devices.
+Freeing from dependencies of specific UI framework keeps ViewModels more stable and protected from changes in the future. Opting in for using Kotlin `Flow` instead of `State` from Jetpack Compose will save your ViewModels from changes if one day you decide to change a UI framework.
+Exposing platform-agnostic models from ViewModels enables latter to be used in UI implemented with any framework.
