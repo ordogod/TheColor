@@ -135,10 +135,6 @@ Generating a new random color on *Home* screen will automatically proceed with i
 - DI: Dagger & Hilt
 - Local data: Room, Preferences DataStore
 - Remote data: Retrofit 2, Moshi
-- UI: Jetpack Compose, Compose Navigation, single Activity approach, Material 3
+- UI: Jetpack Compose, Compose Navigation, Material 3
 - Unit testing: JUnit 4, MockK, Kotlin Assertions
-
-## Software approaches
-
-- Clean architecture
-- Gradle modularization
+- Also: [Debounce](https://github.com/mmolosay/debounce), [Colormath](https://github.com/ajalt/colormath), [Compose Shimmer](https://github.com/valentinilk/compose-shimmer)
