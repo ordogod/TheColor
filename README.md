@@ -143,7 +143,8 @@ Generating a new random color on *Home* screen will automatically proceed with i
 
 ### Clean Architecture
 Clean architecture straight from Robert Martin's book. The app has 3 layers: domain, data and presentation. Domain layer is the most important and sensitive one, thus it's the most high-level and doesn't depend on other layers. Data layer retrieves and stores data used by domain layer. Presentation layer contains user interface (GUI in particular).
-There are some curious places in the code architecture-wise, like accessing `Repositories` directly from Presentation and implementing use cases in Data layer. I'm giving you the opportunity to find them in code and make sense of them.
+
+There are some curious places in the code architecture-wise, like accessing `Repositories` directly from Presentation and implementing use cases in Data layer. I'm giving you the opportunity to find them in code and make sense of them yourself. Documentation and commit history will help you with it.
 
 ### Gradle modularization
 Each feature or themed clump of code is located in its own Gradle module. This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
