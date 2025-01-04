@@ -45,20 +45,22 @@ It has open-source code and full commit history, so anyone can trace my decision
 
 ### Home
 The main screen of the app. Displayed after the Splash screen.
-Contains *Color Input*, *Color Preview* and *Color Center* views.  They are always in sync:
+Contains *Color Input*, *Color Preview* and *Color Center* features (views).  They are always in sync:
 
  - entering a valid color in *Color Input* will show *Color Preview* for it.
  - changing or clearing *Color Input* will change / hide *Color Preview*.
- - generating a new random color will populate it into *Color input*.
+ - generating a new random color will populate it into *Color Input*.
  - selecting "go to exact color" or "go to initial color" in *Color Details* will populate *Color Input* with the corresponding color.
 
 Allows to go to the *Settings* screen.
 Allows to proceed with the current color. This will fetch data regarding the color and display *Color Center*.
 Allows to generate a random color.
 
-Handles keyboard "done" button click of *Color Input*. When there's a valid color, the app will proceed with it and a software keyboard (if any) will be hidden. If the color is not valid, then a message will be shown and a software keyboard will remain visible, allowing user to correct the input.
+Handles keyboard "done" button click of *Color Input*. 
+When there's a valid color, the app will proceed with it and a software keyboard (if any) will be hidden. If the color is not valid, then a message will be shown and a software keyboard will remain visible, allowing user to correct the input.
 
-*Color Center* is fully recreated when a color is proceeded with. This means that any user input that happened for previous color will be reset to default values (e.g. color scheme mode in *Color Scheme*).
+*Color Center* is fully recreated when a color is proceeded with. 
+This means that any user input that happened for previous color will be reset to default values (e.g. color scheme mode in *Color Scheme*).
 
 If *"resume from last searched color"* feature from *Settings* is enabled, then the last searched (proceeded with) color will be proceeded with on app startup.
 
@@ -68,9 +70,10 @@ If *"auto proceed with randomized colors"* feature from *Settings* is enabled, t
 Allows user to enter a color in a chosen color space.
 Consists of a view for user input and a list of color spaces to choose from.
 
-All color input types are synchronized. If user enters a valid color through color input of color space X, then when switching to color space Y they will see the same color. If user clears input in any color input type, all color inputs are cleared.
+All color input types are synchronized. 
+If user enters a valid color through color input of color space X, then when switching to color space Y they will see the same color. If user clears input in any color input type, all color inputs are cleared.
 
-User can proceed with entered color by clicking "done" button on a keyboard. The outcome depends on the state of currently entered color (valid or not) and the place where a particular *Color Input* is located. In other words, the event-handling is client-specific.
+User can submit entered color by clicking "done" button on a keyboard. The outcome of this event is handled by the client (the place where particular *Color Input* is located.
 
 User can change a preferred type of color input on the *Settings* screen. The chosen type will become the first one in the list of available color input types. The chosen type will be selected on app launch.
 
@@ -95,18 +98,21 @@ Allows to go to the exact match and view its info.
 Allows to go back to the initial color after that.
 
 ### Color Scheme
-Consists of two parts: color scheme with swatches and color scheme builder. List of the swatches has the current color (one that was proceeded with) as a seed. Other parameters of color scheme are configured from the builder.
+Consists of two parts: color scheme with swatches and color scheme builder. 
+List of the swatches has the current color (one that was proceeded with) as a seed. Other parameters of color scheme are configured from the builder.
+
 Allows to choose the mode of the color scheme: monochrome, analogic, etc.
 Allows to choose number of swatches to have in the color scheme.
 Allows to view *Color Details* for each swatch.
 
 ### Settings
-Contains list of user preferences. Changing values will change the behaviour of the features those items relate to.
+Contains items with values. Changing values will change the behaviour of the parts of the app those items relate to.
 Allows user to reset their preferences back to default values.
-Items (features) are listed below.
+
+Settings items are listed below.
 
 #### Preferred type of color input
-Allows to select a type of color input to be selected by default, on app startup in *Color Input*. This type will also be the first in the list of available input types.
+Allows to select a type of color input to be selected by default (on app startup) in *Color Input*. This type will also be the first in the list of available input types.
 
 #### UI theme
 A color scheme of the application. The options are:
