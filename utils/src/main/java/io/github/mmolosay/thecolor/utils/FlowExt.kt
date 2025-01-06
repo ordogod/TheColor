@@ -16,6 +16,15 @@ fun <T> Flow<T?>.onEachNotNull(action: suspend (T) -> Unit): Flow<T?> =
         action(value)
     }
 
+/**
+ * It is a [DelicateCoroutinesApi].
+ * The timeout may be a cause of malfunction when:
+ * 1. debugging and waiting on breakpoints, allowing the timeout to expire.
+ * 2. as underlying [withTimeout], it throws [TimeoutCancellationException].
+ * This exception derives from a [CancellationException], which considered as non-fatal.
+ * Thus, coroutine will be cancelled silently without propagating this exception to higher level.
+ */
+@DelicateCoroutinesApi
 suspend fun <T> Flow<T>.firstWithTimeout(timeout: Duration): T {
     val flow = this
     return withTimeout(timeout) {
@@ -28,12 +37,7 @@ suspend fun <T> Flow<T>.firstWithTimeout(timeout: Duration): T {
  * This operator is designed to be used to get a value from a flow when the caller
  * expects it to be emitted promptly, e.g. due to the replay mechanism of `MutableFlow`.
  *
- * It is a [DelicateCoroutinesApi].
- * The timeout may be a cause of malfunction when:
- * 1. debugging and waiting on breakpoints, allowing the timeout to expire.
- * 2. as underlying [withTimeout], it throws [TimeoutCancellationException].
- * This exception derives from a [CancellationException], which considered as non-fatal.
- * Thus, coroutine will be cancelled silently without propagating this exception to higher level.
+ * @see [firstWithTimeout]
  */
 @DelicateCoroutinesApi
 suspend fun <T> Flow<T>.firstPronto(): T =

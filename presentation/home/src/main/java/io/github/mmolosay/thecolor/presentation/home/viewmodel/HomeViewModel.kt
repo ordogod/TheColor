@@ -14,10 +14,10 @@ import io.github.mmolosay.thecolor.domain.usecase.IsColorLightUseCase
 import io.github.mmolosay.thecolor.presentation.api.ColorToColorIntUseCase
 import io.github.mmolosay.thecolor.presentation.api.ViewModelCoroutineScope
 import io.github.mmolosay.thecolor.presentation.center.ColorCenterViewModel
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsCommand
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsCommandStore
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsEvent
-import io.github.mmolosay.thecolor.presentation.details.ColorRole
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsCommand
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsCommandStore
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsEvent
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorRole
 import io.github.mmolosay.thecolor.presentation.home.viewmodel.HomeData.CanProceed
 import io.github.mmolosay.thecolor.presentation.home.viewmodel.HomeData.ColorSchemeSelectedSwatchData
 import io.github.mmolosay.thecolor.presentation.input.api.ColorInputColorStore

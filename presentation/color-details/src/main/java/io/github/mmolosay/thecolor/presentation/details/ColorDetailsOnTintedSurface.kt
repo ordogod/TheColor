@@ -5,6 +5,7 @@ import io.github.mmolosay.thecolor.presentation.api.ColorInt
 import io.github.mmolosay.thecolor.presentation.design.ColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsSeedData
 import io.github.mmolosay.thecolor.presentation.impl.toCompose
 
 /**

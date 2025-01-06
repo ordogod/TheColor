@@ -25,11 +25,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
-import io.github.mmolosay.thecolor.presentation.design.LocalColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
+import io.github.mmolosay.thecolor.presentation.design.colorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.impl.clipFullyRounded
 
 /**
@@ -69,15 +69,13 @@ private fun Swatches() {
 }
 
 @Composable
-private fun Swatch() {
-    val color = LocalColorsOnTintedSurface.current.accent
+private fun Swatch() =
     Box(
         modifier = Modifier
             .size(64.dp)
             .clip(CircleShape)
-            .background(color),
+            .background(colorsOnTintedSurface.accent),
     )
-}
 
 @Composable
 private fun ModeSection() {
@@ -132,9 +130,7 @@ private fun ModeChip(modifier: Modifier) {
 private val fill: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalColorsOnTintedSurface.current
-        .accent
-        .copy(alpha = fillAlpha)
+    get() = colorsOnTintedSurface.accent.copy(alpha = fillAlpha)
 
 private const val fillAlpha = 0.30f
 

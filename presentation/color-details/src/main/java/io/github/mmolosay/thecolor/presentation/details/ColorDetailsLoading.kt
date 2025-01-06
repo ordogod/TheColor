@@ -20,11 +20,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
-import io.github.mmolosay.thecolor.presentation.design.LocalColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
+import io.github.mmolosay.thecolor.presentation.design.colorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.impl.clipFullyRounded
 
 /**
@@ -172,9 +172,7 @@ private fun ColorTranslations() {
 private val fill: Color
     @Composable
     @ReadOnlyComposable
-    get() = LocalColorsOnTintedSurface.current
-        .accent
-        .copy(alpha = 0.30f)
+    get() = colorsOnTintedSurface.accent.copy(alpha = 0.30f)
 
 @Preview
 @Composable

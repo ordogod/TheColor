@@ -5,9 +5,9 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import io.github.mmolosay.thecolor.presentation.api.ViewModelCoroutineScope
 import io.github.mmolosay.thecolor.presentation.center.ColorCenterViewModel
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsCommandStore
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsEventStore
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsViewModel
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsCommandStore
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsEventStore
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeCommandStore
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeEventStore
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeViewModel

@@ -6,6 +6,7 @@ import com.squareup.moshi.ToJson
 /**
  * @param value A String expected by server that represents a particular entry.
  */
+@Suppress("SpellCheckingInspection")
 enum class SchemeModeDto(val value: String) {
     Monochrome("monochrome"),
     MonochromeDark("monochrome-dark"),
