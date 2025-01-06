@@ -34,6 +34,10 @@ private val darkColorScheme: MaterialColorScheme by lazy {
     darkColorScheme()
 }
 
+/*
+ * Animating each color of MaterialColorScheme using 'animateAsState()' is expensive.
+ * There's a room for improvement TODO: improve performance
+ */
 @Composable
 fun MaterialColorScheme.animateColors(): MaterialColorScheme {
     val animationSpec = tween<Color>(
