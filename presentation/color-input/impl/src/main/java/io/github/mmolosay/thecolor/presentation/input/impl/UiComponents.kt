@@ -47,7 +47,7 @@ import io.github.mmolosay.thecolor.presentation.input.impl.model.ColorSubmission
 import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
 
 /**
- * Reusable UI components for Color Input Views.
+ * Reusable UI components for 'Color Input' Views.
  */
 internal object UiComponents {
 
