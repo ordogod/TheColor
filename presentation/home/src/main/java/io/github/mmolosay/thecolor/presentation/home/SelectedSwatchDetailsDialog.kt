@@ -27,10 +27,10 @@ import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.details.ColorDetails
 import io.github.mmolosay.thecolor.presentation.details.ColorDetailsCrossfade
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsData
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
 import io.github.mmolosay.thecolor.presentation.details.ColorDetailsOnTintedSurfaceDefaults
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsSeedData
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsViewModel
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsSeedData
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel
 import io.github.mmolosay.thecolor.presentation.impl.ExtendedLifecycleEventObserver
 import io.github.mmolosay.thecolor.presentation.impl.ExtendedLifecycleEventObserver.LifecycleDirectionChangeEvent.EnteringForeground
 import io.github.mmolosay.thecolor.presentation.impl.ExtendedLifecycleEventObserver.LifecycleDirectionChangeEvent.LeavingForeground

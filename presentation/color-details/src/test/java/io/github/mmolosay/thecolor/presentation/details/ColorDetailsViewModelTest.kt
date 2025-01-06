@@ -6,7 +6,16 @@ import io.github.mmolosay.thecolor.domain.result.HttpFailure
 import io.github.mmolosay.thecolor.domain.result.Result
 import io.github.mmolosay.thecolor.domain.usecase.GetColorDetailsUseCase
 import io.github.mmolosay.thecolor.presentation.api.ColorToColorIntUseCase
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsViewModel.DataState
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel.DataState
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsCommand
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsCommandProvider
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsEvent
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsEventStore
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorRole
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.CreateColorDetailsDataUseCase
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.CreateSeedDataUseCase
 import io.github.mmolosay.thecolor.testing.MainDispatcherRule
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should

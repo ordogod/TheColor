@@ -1,4 +1,4 @@
-package io.github.mmolosay.thecolor.presentation.details
+package io.github.mmolosay.thecolor.presentation.details.viewmodel
 
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -10,8 +10,8 @@ import io.github.mmolosay.thecolor.domain.usecase.GetColorDetailsUseCase
 import io.github.mmolosay.thecolor.domain.usecase.IsColorLightUseCase
 import io.github.mmolosay.thecolor.presentation.api.ColorToColorIntUseCase
 import io.github.mmolosay.thecolor.presentation.api.SimpleViewModel
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsData.ExactMatch
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsData.InitialColorData
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData.ExactMatch
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData.InitialColorData
 import io.github.mmolosay.thecolor.presentation.errors.toErrorType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope

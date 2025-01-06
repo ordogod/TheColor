@@ -1,4 +1,4 @@
-package io.github.mmolosay.thecolor.presentation.details
+package io.github.mmolosay.thecolor.presentation.details.viewmodel
 
 import io.github.mmolosay.thecolor.domain.model.Color
 import kotlinx.coroutines.flow.Flow

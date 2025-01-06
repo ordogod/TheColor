@@ -17,6 +17,7 @@ import io.github.mmolosay.thecolor.presentation.design.LocalColorsOnTintedSurfac
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnTintedSurface
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
 
 @Composable
 internal fun ColorTranslations(
