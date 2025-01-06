@@ -155,10 +155,15 @@ Clean architecture straight from Robert Martin's book. The app has 3 layers: dom
 There are some curious places in the code architecture-wise, like accessing `Repositories` directly from Presentation and implementing use cases in Data layer. I'm giving you the opportunity to find them in code and make sense of them yourself. Documentation and commit history will help you with it.
 
 ### Gradle modularization
-Each feature or themed clump of code is located in its own Gradle module. This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
+Each feature or themed clump of code is located in its own Gradle module. 
+This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
 
 ### Single `Activity` approach 
-Activities in Android are somewhat expensive to create in terms of processing power. That's why it is recommended to have only one `Activity` that will house all UI of the app.
+Using a single `Activity` in the app reduces system resource consumption and simplifies navigation and state management. 
+
+Creating an `Activity` in Android is computationally expensive because it involves a series of costly lifecycle and system-level operations.
+
+Single `Activity` approach allows seamless deep-link handling, efficient back stack management, and shared element transitions in UI without dealing with multiple `Activity` lifecycles. This approach reduces complexity, avoids context leaks, and spares system resources by minimizing redundant processing and memory allocation associated with creating multiple Activities.
 
 ### Event-Command approach
 Allows to create highly reusable features and components. Introduces terms *Event* and *Command*.
