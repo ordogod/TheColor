@@ -32,7 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import io.github.mmolosay.thecolor.presentation.api.ColorInt
-import io.github.mmolosay.thecolor.presentation.design.LocalColorsOnTintedSurface
+import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
@@ -266,9 +266,7 @@ private fun Value(
 @Composable
 private fun PreviewLight() {
     TheColorTheme {
-        CompositionLocalProvider(
-            LocalColorsOnTintedSurface provides colorsOnDarkSurface(),
-        ) {
+        ProvideColorsOnTintedSurface(colorsOnDarkSurface()) {
             ColorSpecsWithPreviewData(
                 modifier = Modifier.background(Color(0xFF_126B40)),
             )
@@ -280,9 +278,7 @@ private fun PreviewLight() {
 @Composable
 private fun PreviewDark() {
     TheColorTheme {
-        CompositionLocalProvider(
-            LocalColorsOnTintedSurface provides colorsOnLightSurface(),
-        ) {
+        ProvideColorsOnTintedSurface(colorsOnLightSurface()) {
             ColorSpecsWithPreviewData(
                 modifier = Modifier.background(Color(0xFF_F0F8FF)),
             )
