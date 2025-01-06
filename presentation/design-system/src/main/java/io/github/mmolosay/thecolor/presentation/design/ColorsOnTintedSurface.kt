@@ -16,7 +16,7 @@ val LocalColorsOnTintedSurface = compositionLocalOf<ColorsOnTintedSurface> {
 val colorsOnTintedSurface: ColorsOnTintedSurface
     @Composable
     @ReadOnlyComposable
-    get() = LocalColorsOnTintedSurface.current
+    inline get() = LocalColorsOnTintedSurface.current
 
 @Composable
 fun ProvideColorsOnTintedSurface(
