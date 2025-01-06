@@ -6,6 +6,8 @@ import io.github.mmolosay.thecolor.domain.result.Result
 /**
  * Presentational type of an error.
  * Usually defined by an instance of domain [Result.Failure][io.github.mmolosay.thecolor.domain.result.Result.Failure].
+ *
+ * @see Result.Failure.toErrorType
  */
 enum class ErrorType {
     NoConnection,
