@@ -16,6 +16,7 @@ Cutting-edge native Android app about each and every known color.
 
 * [What is it](#what-is-it)
 * [Who is it for](#who-is-it-for)
+* [Development stack](#development-stack)
 * [App features](#app-features)
 * [Software approaches](#software-approaches)
 
@@ -40,6 +41,18 @@ Over the course of years, it evolved into a polished, comprehensive app that I'm
 I would be flattered if other developers find inspiration in this software, its approaches and 
 solutions.
 It has open-source code and full commit history, so anyone can trace my decisions and the app's development journey.
+
+## Development stack
+
+- Kotlin 1.9.x
+- Gradle Kotlin DSL
+- Kotlin Flows and coroutines
+- DI: Dagger & Hilt
+- Local data: Room, Preferences DataStore
+- Remote data: Retrofit 2, Moshi
+- UI: Jetpack Compose, Compose Navigation, Material 3
+- Unit testing: JUnit 4, MockK, Kotlin Assertions
+- Also: [Debounce](https://github.com/mmolosay/debounce), [Timber](https://github.com/JakeWharton/timber), [Colormath](https://github.com/ajalt/colormath), [Compose Shimmer](https://github.com/valentinilk/compose-shimmer)
 
 ## App Features
 
@@ -133,18 +146,6 @@ This feature makes it quicker to change the entire value of the text field. With
 
 #### Auto proceed with randomized colors
 Generating a new random color on *Home* screen will automatically proceed with it.
-
-## Development stack
-
-- Kotlin 1.9.x
-- Gradle Kotlin DSL
-- Kotlin Flows and coroutines
-- DI: Dagger & Hilt
-- Local data: Room, Preferences DataStore
-- Remote data: Retrofit 2, Moshi
-- UI: Jetpack Compose, Compose Navigation, Material 3
-- Unit testing: JUnit 4, MockK, Kotlin Assertions
-- Also: [Debounce](https://github.com/mmolosay/debounce), [Timber](https://github.com/JakeWharton/timber), [Colormath](https://github.com/ajalt/colormath), [Compose Shimmer](https://github.com/valentinilk/compose-shimmer)
 
 ## Software approaches
 
