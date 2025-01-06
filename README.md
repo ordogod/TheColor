@@ -181,6 +181,9 @@ Freeing from dependencies of specific UI framework keeps ViewModels more stable 
 
 Exposing platform-agnostic models from ViewModels enables latter to be used in UI implemented with any framework.
 
+### Separation in API and implementation in Presentation layer
+TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+
 ### Valuable unit tests
 Most of the principles I follow when it comes to unit tests are talked about in this brilliant presentation:
 [Write awesome tests by Jeroen Mols](https://youtu.be/F8Gc8Nwf0yk?si=M6Z_-75ueUsn4iO_)
