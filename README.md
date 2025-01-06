@@ -61,6 +61,9 @@ When there's a valid color, the app will proceed with it and a software keyboard
 
 *Color Center* is fully recreated when a color is proceeded with. 
 This means that any user input that happened for previous color will be reset to default values (e.g. color scheme mode in *Color Scheme*).
+*Color Center* is displayed when a color is proceeded with, hidden when color is changed (but not proceeded with yet) or cleared.
+
+Selecting a swatch in *Color Scheme* opens *Color Details* for this color.
 
 If *"resume from last searched color"* feature from *Settings* is enabled, then the last searched (proceeded with) color will be proceeded with on app startup.
 
@@ -73,8 +76,6 @@ Consists of a view for user input and a list of color spaces to choose from.
 All color input types are synchronized. 
 If user enters a valid color through color input of color space X, then when switching to color space Y they will see the same color. If user clears input in any color input type, all color inputs are cleared.
 
-User can submit entered color by clicking "done" button on a keyboard. The outcome of this event is handled by the client (the place where particular *Color Input* is located.
-
 User can change a preferred type of color input on the *Settings* screen. The chosen type will become the first one in the list of available color input types. The chosen type will be selected on app launch.
 
 Supports *"smart backspace"* and *"select all text on focus"* features from *Settings*.
@@ -83,8 +84,7 @@ Supports *"smart backspace"* and *"select all text on focus"* features from *Set
 A small view that visually displays a color.
 
 ### Color Center
-A group for two other feature: *Color Details* and *Color Scheme*.
-Displays when user proceeds with a color. Hides when color is changed or cleared.
+A group of two other feature: *Color Details* and *Color Scheme*.
 
 ### Color Details
 Presents information about a color: 
@@ -103,7 +103,6 @@ List of the swatches has the current color (one that was proceeded with) as a se
 
 Allows to choose the mode of the color scheme: monochrome, analogic, etc.
 Allows to choose number of swatches to have in the color scheme.
-Allows to view *Color Details* for each swatch.
 
 ### Settings
 Contains items with values. Changing values will change the behaviour of the parts of the app those items relate to.
