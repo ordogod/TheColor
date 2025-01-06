@@ -175,3 +175,22 @@ Decoupling from Android SDK significantly simplifies unit tests, removing the ne
 Freeing from dependencies of specific UI framework keeps ViewModels more stable and protected from changes in the future. Opting in for using Kotlin `Flow` instead of `State` from Jetpack Compose will save your ViewModels from changes if one day you decide to change a UI framework.
 
 Exposing platform-agnostic models from ViewModels enables latter to be used in UI implemented with any framework.
+
+
+### Valuable unit tests
+For me, unit tests are the must-have thing if you are serious about the work you're doing and the results you're trying to achieve.
+I have a list of rules when it comes to unit tests. This allows me to have only unit tests that are indeed valuable.
+
+I **only** write (or add new) unit tests if:
+ - a piece of code was caught containing a bug
+ - a piece of code may be executed in a multitude of ways and yield different results / produce various side-effects
+ - a piece of code is vital for the application
+ - a piece of code employs API that I'm not entirely sure how it works
+
+When writing a new unit test, I try to put it next to other tests that target the same feature of the component.
+Most of the times I have only one assertion in the test. 
+I add verbose documentation for tests that have complex *given* or/and *when* parts.
+I keep most of mocked behaviour in the body of each test case. I rarely mock dependencies outside of the particular test.
+I almost never use visibility modifiers in unit test classes.
+
+See brilliant presentation on this topic: [Write awesome tests by Jeroen Mols](https://youtu.be/F8Gc8Nwf0yk?si=M6Z_-75ueUsn4iO_)
