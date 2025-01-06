@@ -24,7 +24,7 @@ import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInp
  * This way if user was using one specific View, after switching to other View they will see
  * the UI with the same data (color) they have left on in previous View.
  *
- * Any update is also sent to [colorInputColorStore], which can be used to obtain current abstract
+ * Any update is also sent to [colorInputColorStore], which can be used to obtain current
  * color.
  */
 class ColorInputMediator @AssistedInject constructor(
@@ -103,7 +103,7 @@ class ColorInputMediator @AssistedInject constructor(
             ColorState.AbsentOrInvalid
         }
 
-    /** State of the color the user is currently working with in color input View */
+    /** State of the color the user is currently working with in 'Color Input' View */
     private sealed interface ColorState {
         data object AbsentOrInvalid : ColorState
         data class Valid(val color: Color) : ColorState
