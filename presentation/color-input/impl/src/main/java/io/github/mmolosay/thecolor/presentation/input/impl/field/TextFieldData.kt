@@ -28,6 +28,7 @@ data class TextFieldData(
     @JvmInline
     value class Text(val string: String)
 
+    // "trailing" and "button" are very GUI-ish terms. I used them to make the code easier to understand
     sealed interface TrailingButton {
         data object Hidden : TrailingButton
         data class Visible(val onClick: () -> Unit) : TrailingButton
