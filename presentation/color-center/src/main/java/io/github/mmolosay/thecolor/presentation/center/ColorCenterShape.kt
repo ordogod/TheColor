@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 
 /**
- * A shape for color center View.
+ * A shape for Color Center View.
  *
  * Presently only used for color center at Home screen.
  * Placed in 'color-center' module for future reusing.
