@@ -24,7 +24,7 @@ Cutting-edge native Android app about each and every known color.
 
 ## What is it
 
-This is a [native](https://en.wikipedia.org/wiki/Mobile_app#Types:~:text=and%20hybrid%20apps.-,Native%20app,-All%20apps%20targeted) Android application about colors.
+This is a [native](https://en.wikipedia.org/wiki/Mobile_app#Types:~:text=and%20hybrid%20apps.-,Native%20app,is%20to%20ensure%20best%20performance%20for%20a%20specific%20mobile%20operating%20system.,-Web%2Dbased%20app) Android application about colors.
 You can search for a specific color or generate a random one.
 Explore detailed color information and create custom color schemes with the color scheme builder.
 
