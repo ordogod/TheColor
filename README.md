@@ -59,11 +59,11 @@ Allows to generate a random color.
 Handles keyboard "done" button click of *Color Input*. 
 When there's a valid color, the app will proceed with it and a software keyboard (if any) will be hidden. If the color is not valid, then a message will be shown and a software keyboard will remain visible, allowing user to correct the input.
 
+*Color Center* is displayed when a color is proceeded with, hidden when color is changed (but not proceeded with yet) or cleared.
 *Color Center* is fully recreated when a color is proceeded with. 
 This means that any user input that happened for previous color will be reset to default values (e.g. color scheme mode in *Color Scheme*).
-*Color Center* is displayed when a color is proceeded with, hidden when color is changed (but not proceeded with yet) or cleared.
 
-Selecting a swatch in *Color Scheme* opens *Color Details* for this color.
+Selecting a swatch in *Color Scheme* displays *Color Details* for this color.
 
 If *"resume from last searched color"* feature from *Settings* is enabled, then the last searched (proceeded with) color will be proceeded with on app startup.
 
