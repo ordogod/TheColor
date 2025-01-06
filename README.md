@@ -175,11 +175,11 @@ Freeing from dependencies of specific UI framework keeps ViewModels more stable 
 
 Exposing platform-agnostic models from ViewModels enables latter to be used in UI implemented with any framework.
 
-
 ### Valuable unit tests
-For me, unit tests are the must-have thing if you are serious about the work you're doing and the results you're trying to achieve.
-I have a list of rules when it comes to unit tests. This allows me to have only unit tests that are indeed valuable.
+Most of the principles I follow when it comes to unit tests are talked about in this brilliant presentation:
+[Write awesome tests by Jeroen Mols](https://youtu.be/F8Gc8Nwf0yk?si=M6Z_-75ueUsn4iO_)
 
+Additionally, I have a set of my own rules.
 I **only** write (or add new) unit tests if:
  - a piece of code was caught containing a bug
  - a piece of code may be executed in a multitude of ways and yield different results / produce various side-effects
@@ -188,8 +188,9 @@ I **only** write (or add new) unit tests if:
 
 When writing a new unit test, I try to put it next to other tests that target the same feature of the component.
 Most of the times I have only one assertion in the test. 
-I add verbose documentation for tests that have complex *given* or/and *when* parts.
-I keep most of mocked behaviour in the body of each test case. I rarely mock dependencies outside of the particular test.
+I add verbose documentation for tests that have complex *given*, *when* or *then* part(s).
+I keep most of mocked behaviour in the body of each test case. I rarely mock dependencies on the level of the class that contains tests.
 I almost never use visibility modifiers in unit test classes.
 
-See brilliant presentation on this topic: [Write awesome tests by Jeroen Mols](https://youtu.be/F8Gc8Nwf0yk?si=M6Z_-75ueUsn4iO_)
+All above allows me to have valuable and readable tests. I don't waste time chasing code coverage, testing that obvious code indeed *does* work. 
+If I want to remind myself of the software contract that a component establishes and I feel lazy going through its code, then I may just open its unit tests and see what is the expected behaviour.
