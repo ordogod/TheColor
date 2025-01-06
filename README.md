@@ -16,6 +16,7 @@ Cutting-edge native Android app about each and every known color.
 
 * [What is it](#what-is-it)
 * [Who is it for](#who-is-it-for)
+* [Development stack](#development-stack)
 * [App features](#app-features)
 * [Software approaches](#software-approaches)
 
@@ -23,7 +24,7 @@ Cutting-edge native Android app about each and every known color.
 
 ## What is it
 
-This is a native Android application about colors.
+This is a [native](https://en.wikipedia.org/wiki/Mobile_app#Types:~:text=and%20hybrid%20apps.-,Native%20app,is%20to%20ensure%20best%20performance%20for%20a%20specific%20mobile%20operating%20system.,-Web%2Dbased%20app) Android application about colors.
 You can search for a specific color or generate a random one.
 Explore detailed color information and create custom color schemes with the color scheme builder.
 
@@ -40,6 +41,18 @@ Over the course of years, it evolved into a polished, comprehensive app that I'm
 I would be flattered if other developers find inspiration in this software, its approaches and 
 solutions.
 It has open-source code and full commit history, so anyone can trace my decisions and the app's development journey.
+
+## Development stack
+
+- [Kotlin 1.9.x](https://kotlinlang.org/)
+- [Gradle Kotlin DSL](https://docs.gradle.org/current/userguide/kotlin_dsl.html)
+- Kotlin [Flows and coroutines](https://kotlinlang.org/docs/coroutines-guide.html)
+- DI: [Dagger 2](https://dagger.dev) & [Hilt](https://dagger.dev/hilt/)
+- Local data: [Room](https://developer.android.com/training/data-storage/room), [Preferences DataStore](https://developer.android.com/topic/libraries/architecture/datastore)
+- Remote data: [Retrofit 2](https://github.com/square/retrofit?tab=readme-ov-file), [Moshi](https://github.com/square/moshi)
+- UI: [Jetpack Compose](https://developer.android.com/compose), [Compose Navigation](https://developer.android.com/develop/ui/compose/navigation), [Material 3](https://m3.material.io/)
+- Unit testing: [JUnit 4](https://junit.org/junit4/), [MockK](https://mockk.io/), [Kotest Assertions](https://kotest.io/)
+- Also: [Debounce](https://github.com/mmolosay/debounce), [Timber](https://github.com/JakeWharton/timber), [Colormath](https://github.com/ajalt/colormath), [Compose Shimmer](https://github.com/valentinilk/compose-shimmer)
 
 ## App Features
 
@@ -59,8 +72,11 @@ Allows to generate a random color.
 Handles keyboard "done" button click of *Color Input*. 
 When there's a valid color, the app will proceed with it and a software keyboard (if any) will be hidden. If the color is not valid, then a message will be shown and a software keyboard will remain visible, allowing user to correct the input.
 
+*Color Center* is displayed when a color is proceeded with, hidden when color is changed (but not proceeded with yet) or cleared.
 *Color Center* is fully recreated when a color is proceeded with. 
 This means that any user input that happened for previous color will be reset to default values (e.g. color scheme mode in *Color Scheme*).
+
+Selecting a swatch in *Color Scheme* displays *Color Details* for this color.
 
 If *"resume from last searched color"* feature from *Settings* is enabled, then the last searched (proceeded with) color will be proceeded with on app startup.
 
@@ -73,8 +89,6 @@ Consists of a view for user input and a list of color spaces to choose from.
 All color input types are synchronized. 
 If user enters a valid color through color input of color space X, then when switching to color space Y they will see the same color. If user clears input in any color input type, all color inputs are cleared.
 
-User can submit entered color by clicking "done" button on a keyboard. The outcome of this event is handled by the client (the place where particular *Color Input* is located.
-
 User can change a preferred type of color input on the *Settings* screen. The chosen type will become the first one in the list of available color input types. The chosen type will be selected on app launch.
 
 Supports *"smart backspace"* and *"select all text on focus"* features from *Settings*.
@@ -83,8 +97,7 @@ Supports *"smart backspace"* and *"select all text on focus"* features from *Set
 A small view that visually displays a color.
 
 ### Color Center
-A group for two other feature: *Color Details* and *Color Scheme*.
-Displays when user proceeds with a color. Hides when color is changed or cleared.
+A group of two other feature: *Color Details* and *Color Scheme*.
 
 ### Color Details
 Presents information about a color: 
@@ -103,7 +116,6 @@ List of the swatches has the current color (one that was proceeded with) as a se
 
 Allows to choose the mode of the color scheme: monochrome, analogic, etc.
 Allows to choose number of swatches to have in the color scheme.
-Allows to view *Color Details* for each swatch.
 
 ### Settings
 Contains items with values. Changing values will change the behaviour of the parts of the app those items relate to.
@@ -135,18 +147,6 @@ This feature makes it quicker to change the entire value of the text field. With
 #### Auto proceed with randomized colors
 Generating a new random color on *Home* screen will automatically proceed with it.
 
-## Development stack
-
-- Kotlin 1.9.x
-- Gradle Kotlin DSL
-- Kotlin Flows and coroutines
-- DI: Dagger & Hilt
-- Local data: Room, Preferences DataStore
-- Remote data: Retrofit 2, Moshi
-- UI: Jetpack Compose, Compose Navigation, Material 3
-- Unit testing: JUnit 4, MockK, Kotlin Assertions
-- Also: [Debounce](https://github.com/mmolosay/debounce), [Colormath](https://github.com/ajalt/colormath), [Compose Shimmer](https://github.com/valentinilk/compose-shimmer)
-
 ## Software approaches
 
 ### Clean Architecture
@@ -155,10 +155,15 @@ Clean architecture straight from Robert Martin's book. The app has 3 layers: dom
 There are some curious places in the code architecture-wise, like accessing `Repositories` directly from Presentation and implementing use cases in Data layer. I'm giving you the opportunity to find them in code and make sense of them yourself. Documentation and commit history will help you with it.
 
 ### Gradle modularization
-Each feature or themed clump of code is located in its own Gradle module. This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
+Each feature or themed clump of code is located in its own Gradle module. 
+This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
 
 ### Single `Activity` approach 
-Activities in Android are somewhat expensive to create in terms of processing power. That's why it is recommended to have only one `Activity` that will house all UI of the app.
+Using a single `Activity` in the app reduces system resource consumption and simplifies navigation and state management. 
+
+Creating an `Activity` in Android is computationally expensive because it involves a series of costly lifecycle and system-level operations.
+
+Single `Activity` approach allows seamless deep-link handling, efficient back stack management, and shared element transitions in UI without dealing with multiple `Activity` lifecycles. This approach reduces complexity, avoids context leaks, and spares system resources by minimizing redundant processing and memory allocation associated with creating multiple Activities.
 
 ### Event-Command approach
 Allows to create highly reusable features and components. Introduces terms *Event* and *Command*.
@@ -175,3 +180,26 @@ Decoupling from Android SDK significantly simplifies unit tests, removing the ne
 Freeing from dependencies of specific UI framework keeps ViewModels more stable and protected from changes in the future. Opting in for using Kotlin `Flow` instead of `State` from Jetpack Compose will save your ViewModels from changes if one day you decide to change a UI framework.
 
 Exposing platform-agnostic models from ViewModels enables latter to be used in UI implemented with any framework.
+
+### Separation in API and implementation in Presentation layer
+TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+
+### Valuable unit tests
+Most of the principles I follow when it comes to unit tests are talked about in this brilliant presentation:
+[Write awesome tests by Jeroen Mols](https://youtu.be/F8Gc8Nwf0yk?si=M6Z_-75ueUsn4iO_)
+
+Additionally, I have a set of my own rules.
+I **only** write (or add new) unit tests if:
+ - a piece of code was caught containing a bug
+ - a piece of code may be executed in a multitude of ways and yield different results / produce various side-effects
+ - a piece of code is vital for the application
+ - a piece of code employs API that I'm not entirely sure how it works
+
+When writing a new unit test, I try to put it next to other tests that target the same feature of the component.
+Most of the times I have only one assertion in the test. 
+I add verbose documentation for tests that have complex *given*, *when* or *then* part(s).
+I keep most of mocked behaviour in the body of each test case. I rarely mock dependencies on the level of the class that contains tests.
+I almost never use visibility modifiers in unit test classes.
+
+All above allows me to have valuable and readable tests. I don't waste time chasing code coverage, testing that obvious code indeed *does* work. 
+If I want to remind myself of the software contract that a component establishes and I feel lazy going through its code, then I may just open its unit tests and see what is the expected behaviour.
