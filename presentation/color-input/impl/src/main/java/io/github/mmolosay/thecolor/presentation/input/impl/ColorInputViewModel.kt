@@ -85,7 +85,6 @@ class ColorInputViewModel @AssistedInject constructor(
         )
     }
 
-
     override fun dispose() {
         super.dispose()
         hexViewModel.dispose()
