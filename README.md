@@ -44,14 +44,14 @@ It has open-source code and full commit history, so anyone can trace my decision
 
 ## Development stack
 
-- Kotlin 1.9.x
-- Gradle Kotlin DSL
-- Kotlin Flows and coroutines
-- DI: Dagger & Hilt
-- Local data: Room, Preferences DataStore
-- Remote data: Retrofit 2, Moshi
-- UI: Jetpack Compose, Compose Navigation, Material 3
-- Unit testing: JUnit 4, MockK, Kotlin Assertions
+- [Kotlin 1.9.x](https://kotlinlang.org/)
+- [Gradle Kotlin DSL](https://docs.gradle.org/current/userguide/kotlin_dsl.html)
+- Kotlin [Flows and coroutines](https://kotlinlang.org/docs/coroutines-guide.html)
+- DI: [Dagger 2](https://dagger.dev) & [Hilt](https://dagger.dev/hilt/)
+- Local data: [Room](https://developer.android.com/training/data-storage/room), [Preferences DataStore](https://developer.android.com/topic/libraries/architecture/datastore)
+- Remote data: [Retrofit 2](https://github.com/square/retrofit?tab=readme-ov-file), [Moshi](https://github.com/square/moshi)
+- UI: [Jetpack Compose](https://developer.android.com/compose), [Compose Navigation](https://developer.android.com/develop/ui/compose/navigation), [Material 3](https://m3.material.io/)
+- Unit testing: [JUnit 4](https://junit.org/junit4/), [MockK](https://mockk.io/), [Kotest Assertions](https://kotest.io/)
 - Also: [Debounce](https://github.com/mmolosay/debounce), [Timber](https://github.com/JakeWharton/timber), [Colormath](https://github.com/ajalt/colormath), [Compose Shimmer](https://github.com/valentinilk/compose-shimmer)
 
 ## App Features
