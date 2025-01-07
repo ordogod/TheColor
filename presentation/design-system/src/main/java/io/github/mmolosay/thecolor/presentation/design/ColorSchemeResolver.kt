@@ -6,7 +6,10 @@ package io.github.mmolosay.thecolor.presentation.design
  * Brightness is usually inferred from system UI mode (see [systemBrightness]).
  */
 fun interface ColorSchemeResolver {
-    fun resolve(brightness: Brightness): ColorScheme
+    fun resolve(
+        brightness: Brightness,
+        useDynamicColorSchemes: Boolean,
+    ): ColorScheme
 }
 
 /**
@@ -14,9 +17,18 @@ fun interface ColorSchemeResolver {
  */
 object DayNightColorSchemeResolver : ColorSchemeResolver {
 
-    override fun resolve(brightness: Brightness): ColorScheme =
+    override fun resolve(
+        brightness: Brightness,
+        useDynamicColorSchemes: Boolean,
+    ): ColorScheme =
         when (brightness) {
-            Brightness.Light -> ColorScheme.Light
-            Brightness.Dark -> ColorScheme.Dark
+            Brightness.Light -> when (useDynamicColorSchemes) {
+                true -> ColorScheme.LightDynamic
+                false -> ColorScheme.Light
+            }
+            Brightness.Dark -> when (useDynamicColorSchemes) {
+                true -> ColorScheme.DarkDynamic
+                false -> ColorScheme.Dark
+            }
         }
 }

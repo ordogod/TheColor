@@ -1,6 +1,7 @@
 package io.github.mmolosay.thecolor
 
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -11,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -102,18 +104,25 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     private fun Content() {
+        val context = LocalContext.current
+        val areDynamicColorsEnabled = (true) // TODO: take from user preferences
+        val areDynamicColorsAvailable = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
         val colorScheme = mainViewModel.appUiColorSchemeResolverFlow
             .collectAsStateWithLifecycle(initialValue = null).value
-            ?.resolve(brightness = systemBrightness())
+            ?.resolve(
+                brightness = systemBrightness(),
+                useDynamicColorSchemes = (areDynamicColorsEnabled && areDynamicColorsAvailable),
+            )
             ?: return
-        val useLightTintForNavBarControls = remember(colorScheme) {
-            colorScheme.shouldUseLightTintForNavBarControls()
-        }
-        val materialColorScheme = colorScheme.toMaterialColorScheme()
-        val animatedMaterialColorScheme = materialColorScheme.animateColors()
 
         LaunchedEffect(colorScheme) {
             enableEdgeToEdge(colorSchemeBrightness = colorScheme.brightness())
+        }
+
+        val materialColorScheme = colorScheme.toMaterialColorScheme(context)
+        val animatedMaterialColorScheme = materialColorScheme.animateColors()
+        val useLightTintForNavBarControls = remember(colorScheme) {
+            colorScheme.shouldUseLightTintForNavBarControls()
         }
 
         TheColorTheme(

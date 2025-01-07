@@ -1,20 +1,13 @@
 package io.github.mmolosay.thecolor.presentation.design
 
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.isSingleton
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.single
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorScheme as DomainUiColorScheme
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorSchemeSet as DomainUiColorSchemeSet
 
 /*
  * Contains functions that transform Domain layer models into their equivalents in Presentation layer.
  */
-
-/**
- * Maps [DomainUiColorScheme] of Domain layer to [ColorScheme] of Presentation layer and vice versa.
- */
-fun DomainUiColorScheme.toPresentation(): ColorScheme =
-    when (this) {
-        DomainUiColorScheme.Light -> ColorScheme.Light
-        DomainUiColorScheme.Dark -> ColorScheme.Dark
-    }
 
 /**
  * Maps [DomainUiColorSchemeSet] of Domain layer to a [ColorSchemeResolver] of Presentation layer.
@@ -39,10 +32,23 @@ fun DomainUiColorScheme.toPresentation(): ColorScheme =
  * which falls well within View's scope of responsibility.
  */
 fun DomainUiColorSchemeSet.toPresentation(): ColorSchemeResolver =
-    ColorSchemeResolver { brightness ->
-        val domainColorScheme = when (brightness) {
-            Brightness.Light -> this.light
-            Brightness.Dark -> this.dark
+    ColorSchemeResolver { brightness, useDynamicColorSchemes ->
+        val domainColorScheme = if (this.isSingleton()) {
+            this.single()
+        } else {
+            when (brightness) {
+                Brightness.Light -> this.light
+                Brightness.Dark -> this.dark
+            }
         }
-        domainColorScheme.toPresentation()
+        when (domainColorScheme) {
+            DomainUiColorScheme.Light -> when (useDynamicColorSchemes) {
+                true -> ColorScheme.LightDynamic
+                false -> ColorScheme.Light
+            }
+            DomainUiColorScheme.Dark -> when (useDynamicColorSchemes) {
+                true -> ColorScheme.DarkDynamic
+                false -> ColorScheme.Dark
+            }
+        }
     }
