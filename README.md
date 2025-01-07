@@ -138,7 +138,8 @@ On app startup, the *Home* screen will remember the last color that was proceede
 
 #### Smart backspace
 Go to previous text field when clicking "backspace" in an empty text field. 
-Enables easier editing in text fields of *Color Input*. On Android, there's a "next" button on software keyboard. It allows to go to the next text field in order to not waste time reaching to it (next text field) manually. This feature allows to go to the previous text field by clicking "backspace" when the text field is already empty.
+Enables easier editing in text fields of *Color Input*. On Android, there's a "next" button on software keyboard. 
+It allows to go to the next text field in order to not waste time reaching to it (next text field) manually. This feature allows to go to the previous text field by clicking "backspace" when the text field is already empty.
 
 #### Select all text on focus
 Select all text in a text field when it gets focused (e.g. when user clicks it). 
@@ -150,12 +151,16 @@ Generating a new random color on *Home* screen will automatically proceed with i
 ## Software approaches
 
 ### Clean Architecture
-Clean architecture straight from Robert Martin's book. The app has 3 layers: domain, data and presentation. Domain layer is the most important and sensitive one, thus it's the most high-level and doesn't depend on other layers. Data layer retrieves and stores data used by domain layer. Presentation layer contains user interface (GUI in particular).
+Clean architecture straight from Robert Martin's book. The app has 3 layers: domain, data and presentation. 
+Domain layer is the most important and sensitive one, thus it's the most high-level and doesn't depend on other layers. 
+Data layer retrieves and stores data used by domain layer. 
+Presentation layer contains user interface (GUI in particular).
 
-There are some curious places in the code architecture-wise, like accessing `Repositories` directly from Presentation and implementing use cases in Data layer. I'm giving you the opportunity to find them in code and make sense of them yourself. Documentation and commit history will help you with it.
+There are some curious places in the code architecture-wise, like accessing `Repositories` directly from Presentation and implementing use cases in Data layer. 
+I'm giving you the opportunity to find them in code and make sense of them yourself. Documentation and commit history will help you with it.
 
 ### Gradle modularization
-Each feature or themed clump of code is located in its own Gradle module. 
+Each feature or related group of code is located in its own Gradle module. 
 This allows to easier trace dependencies between parts of the codebase and restricts access to things that should not be accessed in a particular context. Also improves build time and project structure.
 
 ### Single `Activity` approach 
@@ -163,26 +168,42 @@ Using a single `Activity` in the app reduces system resource consumption and sim
 
 Creating an `Activity` in Android is computationally expensive because it involves a series of costly lifecycle and system-level operations.
 
-Single `Activity` approach allows seamless deep-link handling, efficient back stack management, and shared element transitions in UI without dealing with multiple `Activity` lifecycles. This approach reduces complexity, avoids context leaks, and spares system resources by minimizing redundant processing and memory allocation associated with creating multiple Activities.
+Single `Activity` approach allows seamless deep-link handling, efficient back stack management, and shared element transitions in UI without dealing with multiple `Activity` lifecycles. 
+This approach reduces complexity, avoids context leaks, and spares system resources by minimizing redundant processing and memory allocation associated with creating multiple Activities.
 
 ### Event-Command approach
 Allows to create highly reusable features and components. Introduces terms *Event* and *Command*.
 
-*Event* is something that originates inside component (feature) and is destined to be broadcast to the outside (hosting components: clients). An example of the event in the app is selecting a color swatch in *Color Scheme* feature. When the *Color Scheme* is located on *Home* screen, it will open a *Color Details* dialog for the selected color. The *Home* screen decides how to react to the event of selecting a color swatch. This allows to define any behaviour depending on the context where *Color Scheme* is used. For example, in other place selecting a color swatch will open a web browser.
+*Event* is something that originates inside component (feature) and is destined to be broadcast to the outside (hosting components, clients). 
+An example of the event in the app is selecting a color swatch in *Color Scheme* feature. When the *Color Scheme* is located on *Home* screen, it will open a *Color Details* dialog for the selected color. 
+The *Home* screen decides how to react to the event of selecting a color swatch. This allows to define any behaviour depending on the context where *Color Scheme* is used. For example, in other place selecting a color swatch will open a web browser.
 
-*Command* originates in the outside of the component and destined to be processed (handled, executed, reacted to) by the component itself. An example of the command in the app is fetching data in *Color Details* once the color is proceeded with. *Home* screen sends a command "fetch data for this color" to *Color Details*, and the latter obeys.
+*Command* originates in the outside of the component and destined to be processed (handled, executed, reacted to) by the component itself. 
+An example of the command in the app is fetching data in *Color Details* once the color is proceeded with. *Home* screen sends a command "fetch data for this color" to *Color Details*, and the latter obeys.
 
 ### Platform-agnostic `ViewModel`s
 Platform-agnostic ViewModels, free from Android SDK and UI framework dependencies, improve reusability, testability, and maintainability. 
 
 Decoupling from Android SDK significantly simplifies unit tests, removing the need to have Robolectric to recreate components like `Context` that are present only on real devices.
 
-Freeing from dependencies of specific UI framework keeps ViewModels more stable and protected from changes in the future. Opting in for using Kotlin `Flow` instead of `State` from Jetpack Compose will save your ViewModels from changes if one day you decide to change a UI framework.
+Freeing from dependencies of specific UI framework keeps ViewModels more stable and protected from changes in the future. 
+Opting in for using `Flow` from Kotlin instead of `State` from Jetpack Compose will save your ViewModels from changes if one day you decide to change a UI framework.
 
 Exposing platform-agnostic models from ViewModels enables latter to be used in UI implemented with any framework.
+P.S.: in all my years of experience, I've never faced a task that required me to bring platform/framework-specific code into ViewModels.
 
 ### Separation in API and implementation in Presentation layer
-TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+Few feature modules in Presentation layer are split in two sub-modules: API and implementation.
+
+API module contains components that are exposed to other features and are platform-agnostic.
+Usually, there are Presentation layer models and ViewModel-related components in API module. In other words, everything one may need to reuse the __logic__ of feature X in some other feature Y.
+
+Implementation module contains implementations of abstractions defined in API module.
+Here you will find all platform/framework-specific code, UI included.
+
+Just as *Gradle modularization*, this approach helps with code exposure and provides better view on project structure.
+At the moment of writing this, I'm still experimenting with this approach to understand whether it's worth sticking to.
+One's for sure: it is highly optional.
 
 ### Valuable unit tests
 Most of the principles I follow when it comes to unit tests are talked about in this brilliant presentation:
