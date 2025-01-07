@@ -205,6 +205,19 @@ Just as *Gradle modularization*, this approach helps with code exposure and prov
 At the moment of writing this, I'm still experimenting with this approach to understand whether it's worth sticking to.
 One's for sure: it is highly optional.
 
+### Independent features
+I'm trying to keep features of the app independent from each other on the level of dependencies in code.
+Every module in Presentation layer is either an independent feature or a screen that depends on a number of such features.
+
+For example, right now *Color Preview* is only used on *Home* screen to display currently entered color. If you trace the code, you'll find that essentially *Color Preview* takes data from *Color Input*. 
+Nonetheless, *Color Preview* doesn't depend on the code of *Color Input*. Instead, *Home* screen (that hosts both features) re-streams data from *Color Input* to *Color Preview*, which doesn't even "know" about the existence of *Color Input*.
+This allows to use *Color Preview* in other places and with other color sources.
+
+At the same time, screens depend on features.
+It's highly unlikely that you'll be reusing the same screen but with different features on it.
+Thus, there's no need to make screen modules as independent and reusable as feature modules.
+They (screens) explicitly depend on feature modules they use and act as mediators between features inside.
+
 ### Valuable unit tests
 Most of the principles I follow when it comes to unit tests are talked about in this brilliant presentation:
 [Write awesome tests by Jeroen Mols](https://youtu.be/F8Gc8Nwf0yk?si=M6Z_-75ueUsn4iO_)
