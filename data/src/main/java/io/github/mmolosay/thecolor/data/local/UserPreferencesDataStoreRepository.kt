@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.mmolosay.thecolor.domain.model.ColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.DynamicUiColors
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace
@@ -46,6 +47,11 @@ class UserPreferencesDataStoreRepository @Inject constructor(
     private val stateFlowOfAppUiColorSchemeSet: StateFlow<UiColorSchemeSet?> =
         dataStore.data
             .map { it.getAppUiColorSchemeSet() }
+            .stateEagerlyInAppScope()
+
+    private val stateFlowOfDynamicUiColors: StateFlow<DynamicUiColors?> =
+        dataStore.data
+            .map { it.getDynamicUiColors() }
             .stateEagerlyInAppScope()
 
     private val stateFlowOfResumeFromLastSearchedColorOnStartup: StateFlow<ResumeFromLastSearchedColorOnStartup?> =
@@ -133,6 +139,31 @@ class UserPreferencesDataStoreRepository @Inject constructor(
                     val darkColorSchemeDtoValue =
                         with(UiColorSchemeMapper) { value.dark.toDtoString() }
                     preferences[DataStoreKeys.AppUiColorSchemeDark] = darkColorSchemeDtoValue
+                }
+            }
+        }
+    }
+
+    override fun flowOfDynamicUiColors(): Flow<DynamicUiColors> =
+        stateFlowOfDynamicUiColors.filterNotNull()
+
+    private fun Preferences.getDynamicUiColors(): DynamicUiColors {
+        val dtoValue = this[DataStoreKeys.DynamicUiColors]
+        return if (dtoValue != null) {
+            DynamicUiColors(enabled = dtoValue) // boolean stays boolean in both Data and Domain layers
+        } else {
+            DefaultUserPreferences.DynamicUiColors
+        }
+    }
+
+    override suspend fun setDynamicUiColors(value: DynamicUiColors?) {
+        withContext(ioDispatcher) {
+            dataStore.edit { preferences ->
+                val key = DataStoreKeys.DynamicUiColors
+                if (value != null) {
+                    preferences[key] = value.enabled
+                } else {
+                    preferences.remove(key)
                 }
             }
         }
@@ -263,6 +294,8 @@ class UserPreferencesDataStoreRepository @Inject constructor(
 
         /** Key for a `dark` [UserPreferences.UiColorScheme] from the [UserPreferences.UiColorSchemeSet]. */
         val AppUiColorSchemeDark = stringPreferencesKey("app_ui_color_scheme_set_dark_value")
+
+        val DynamicUiColors = booleanPreferencesKey("dynamic_ui_colors")
 
         val ShouldResumeFromLastSearchedColorOnStartup =
             booleanPreferencesKey("should_resume_from_last_searched_color_on_startup")

@@ -242,6 +242,15 @@ fun Settings(
             }
         }
 
+        item("dynamic ui colors") {
+            DynamicUiColors(
+                title = strings.itemDynamicUiColorsTitle,
+                description = strings.itemDynamicUiColorsDesc,
+                checked = data.isDynamicUiColorsEnabled,
+                onCheckedChange = data.changeDynamicUiColorsEnablement,
+            )
+        }
+
         item("resume from last searched color") {
             ResumeFromLastSearchedColor(
                 title = strings.itemResumeFromLastSearchedColorTitle,
@@ -343,6 +352,9 @@ private fun previewData() =
             DomainUiColorSchemeSet.DayNight,
         ),
         changeAppUiColorSchemeSet = {},
+
+        isDynamicUiColorsEnabled = true,
+        changeDynamicUiColorsEnablement = {},
 
         isResumeFromLastSearchedColorOnStartupEnabled = true,
         changeResumeFromLastSearchedColorOnStartupEnablement = {},

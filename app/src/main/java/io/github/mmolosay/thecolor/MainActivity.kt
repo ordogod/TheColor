@@ -105,7 +105,10 @@ class MainActivity : AppCompatActivity() {
     @Composable
     private fun Content() {
         val context = LocalContext.current
-        val areDynamicColorsEnabled = (true) // TODO: take from user preferences
+        val areDynamicColorsEnabled = mainViewModel.dynamicUiColorsFlow
+            .collectAsStateWithLifecycle(initialValue = null).value
+            ?.enabled
+            ?: return
         val areDynamicColorsAvailable = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
         val colorScheme = mainViewModel.appUiColorSchemeResolverFlow
             .collectAsStateWithLifecycle(initialValue = null).value

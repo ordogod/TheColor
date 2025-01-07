@@ -29,6 +29,11 @@ object UserPreferences {
         this.light
 
     @JvmInline
+    value class DynamicUiColors(
+        val enabled: Boolean,
+    )
+
+    @JvmInline
     value class ResumeFromLastSearchedColorOnStartup(
         val enabled: Boolean,
     )

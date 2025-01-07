@@ -12,6 +12,7 @@ class ResetUserPreferenceToDefaultUseCaseImpl @Inject constructor(
         // updating values sequentially vs concurrently take about the same time ~68ms
         userPreferencesRepository.setColorInputType(null)
         userPreferencesRepository.setAppUiColorSchemeSet(null)
+        userPreferencesRepository.setDynamicUiColors(null)
         userPreferencesRepository.setResumeFromLastSearchedColorOnStartup(null)
         userPreferencesRepository.setSmartBackspace(null)
         userPreferencesRepository.setSelectAllTextOnTextFieldFocus(null)

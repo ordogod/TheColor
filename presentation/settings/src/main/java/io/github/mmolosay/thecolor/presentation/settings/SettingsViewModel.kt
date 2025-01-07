@@ -17,6 +17,7 @@ import javax.inject.Inject
 import javax.inject.Named
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors as DomainAutoProceedWithRandomizedColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.DynamicUiColors as DomainDynamicUiColors
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup as DomainShouldResumeFromLastSearchedColorOnStartup
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus as DomainSelectAllTextOnTextFieldFocus
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace as DomainSmartBackspace
@@ -35,6 +36,7 @@ class SettingsViewModel @Inject constructor(
             listOf(
                 userPreferencesRepository.flowOfColorInputType(),
                 userPreferencesRepository.flowOfAppUiColorSchemeSet(),
+                userPreferencesRepository.flowOfDynamicUiColors(),
                 userPreferencesRepository.flowOfResumeFromLastSearchedColorOnStartup(),
                 userPreferencesRepository.flowOfSmartBackspace(),
                 userPreferencesRepository.flowOfSelectAllTextOnTextFieldFocus(),
@@ -64,6 +66,13 @@ class SettingsViewModel @Inject constructor(
     private fun updateAppUiColorSchemeSet(value: DomainUiColorSchemeSet) {
         viewModelScope.launch(defaultDispatcher) {
             userPreferencesRepository.setAppUiColorSchemeSet(value)
+        }
+    }
+
+    private fun updateDynamicUiColorsEnablement(value: Boolean) {
+        viewModelScope.launch(defaultDispatcher) {
+            val domainModel = DomainDynamicUiColors(value)
+            userPreferencesRepository.setDynamicUiColors(domainModel)
         }
     }
 
@@ -99,18 +108,21 @@ class SettingsViewModel @Inject constructor(
     private fun createData(
         userSettings: Array<Any>,
     ): SettingsData =
+        // TODO: use iterator: inserting new parameter shifts following indices by +1
         createData(
             preferredColorInputType = userSettings[0] as DomainColorInputType,
             appUiColorSchemeSet = userSettings[1] as DomainUiColorSchemeSet,
-            shouldResumeFromLastSearchedColorOnStartup = userSettings[2] as DomainShouldResumeFromLastSearchedColorOnStartup,
-            smartBackspace = userSettings[3] as DomainSmartBackspace,
-            selectAllTextOnTextFieldFocus = userSettings[4] as DomainSelectAllTextOnTextFieldFocus,
-            autoProceedWithRandomizedColors = userSettings[5] as DomainAutoProceedWithRandomizedColors,
+            dynamicUiColors = userSettings[2] as DomainDynamicUiColors,
+            shouldResumeFromLastSearchedColorOnStartup = userSettings[3] as DomainShouldResumeFromLastSearchedColorOnStartup,
+            smartBackspace = userSettings[4] as DomainSmartBackspace,
+            selectAllTextOnTextFieldFocus = userSettings[5] as DomainSelectAllTextOnTextFieldFocus,
+            autoProceedWithRandomizedColors = userSettings[6] as DomainAutoProceedWithRandomizedColors,
         )
 
     private fun createData(
         preferredColorInputType: DomainColorInputType,
         appUiColorSchemeSet: DomainUiColorSchemeSet,
+        dynamicUiColors: DomainDynamicUiColors,
         shouldResumeFromLastSearchedColorOnStartup: DomainShouldResumeFromLastSearchedColorOnStartup,
         smartBackspace: DomainSmartBackspace,
         selectAllTextOnTextFieldFocus: DomainSelectAllTextOnTextFieldFocus,
@@ -125,6 +137,9 @@ class SettingsViewModel @Inject constructor(
             appUiColorSchemeSet = appUiColorSchemeSet,
             supportedAppUiColorSchemeSets = supportedAppUiColorSchemeSets(),
             changeAppUiColorSchemeSet = ::updateAppUiColorSchemeSet,
+
+            isDynamicUiColorsEnabled = dynamicUiColors.enabled,
+            changeDynamicUiColorsEnablement = ::updateDynamicUiColorsEnablement,
 
             isResumeFromLastSearchedColorOnStartupEnabled = shouldResumeFromLastSearchedColorOnStartup.enabled,
             changeResumeFromLastSearchedColorOnStartupEnablement = ::updateResumeFromLastSearchedColorOnStartupEnablement,
