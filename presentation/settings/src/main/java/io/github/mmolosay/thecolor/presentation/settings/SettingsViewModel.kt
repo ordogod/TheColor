@@ -107,17 +107,18 @@ class SettingsViewModel @Inject constructor(
     // that's the only way to combine() more than 5 flows of different types
     private fun createData(
         userSettings: Array<Any>,
-    ): SettingsData =
-        // TODO: use iterator: inserting new parameter shifts following indices by +1
-        createData(
-            preferredColorInputType = userSettings[0] as DomainColorInputType,
-            appUiColorSchemeSet = userSettings[1] as DomainUiColorSchemeSet,
-            dynamicUiColors = userSettings[2] as DomainDynamicUiColors,
-            shouldResumeFromLastSearchedColorOnStartup = userSettings[3] as DomainShouldResumeFromLastSearchedColorOnStartup,
-            smartBackspace = userSettings[4] as DomainSmartBackspace,
-            selectAllTextOnTextFieldFocus = userSettings[5] as DomainSelectAllTextOnTextFieldFocus,
-            autoProceedWithRandomizedColors = userSettings[6] as DomainAutoProceedWithRandomizedColors,
+    ): SettingsData {
+        val iterator = userSettings.iterator()
+        return createData(
+            preferredColorInputType = iterator.next() as DomainColorInputType,
+            appUiColorSchemeSet = iterator.next() as DomainUiColorSchemeSet,
+            dynamicUiColors = iterator.next() as DomainDynamicUiColors,
+            shouldResumeFromLastSearchedColorOnStartup = iterator.next()as DomainShouldResumeFromLastSearchedColorOnStartup,
+            smartBackspace = iterator.next() as DomainSmartBackspace,
+            selectAllTextOnTextFieldFocus = iterator.next() as DomainSelectAllTextOnTextFieldFocus,
+            autoProceedWithRandomizedColors = iterator.next() as DomainAutoProceedWithRandomizedColors,
         )
+    }
 
     private fun createData(
         preferredColorInputType: DomainColorInputType,
