@@ -1,7 +1,5 @@
 package io.github.mmolosay.thecolor.presentation.design
 
-import io.github.mmolosay.thecolor.domain.model.UserPreferences.isSingleton
-import io.github.mmolosay.thecolor.domain.model.UserPreferences.single
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorScheme as DomainUiColorScheme
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorSchemeSet as DomainUiColorSchemeSet
 
@@ -33,13 +31,9 @@ import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorSchemeSet
  */
 fun DomainUiColorSchemeSet.toPresentation(): ColorSchemeResolver =
     ColorSchemeResolver { brightness, useDynamicColorSchemes ->
-        val domainColorScheme = if (this.isSingleton()) {
-            this.single()
-        } else {
-            when (brightness) {
-                Brightness.Light -> this.light
-                Brightness.Dark -> this.dark
-            }
+        val domainColorScheme = when (brightness) {
+            Brightness.Light -> this.light
+            Brightness.Dark -> this.dark
         }
         when (domainColorScheme) {
             DomainUiColorScheme.Light -> when (useDynamicColorSchemes) {
