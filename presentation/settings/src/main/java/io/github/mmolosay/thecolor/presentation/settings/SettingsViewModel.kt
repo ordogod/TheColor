@@ -158,11 +158,11 @@ class SettingsViewModel @Inject constructor(
 
     private fun supportedAppUiColorSchemeSets(): List<DomainUiColorSchemeSet> =
         buildList {
+            DomainUiColorSchemeSet.DayNight
+                .also { add(it) }
             DomainUiColorScheme.Light.asSingletonSet()
                 .also { add(it) }
             DomainUiColorScheme.Dark.asSingletonSet()
-                .also { add(it) }
-            DomainUiColorSchemeSet.DayNight
                 .also { add(it) }
             DomainUiColorScheme.Jungle.asSingletonSet()
                 .also { add(it) }
