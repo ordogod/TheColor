@@ -2,10 +2,13 @@ package io.github.mmolosay.thecolor.presentation.settings.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -17,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -114,10 +118,12 @@ fun SettingsScreen(
                 onResetPreferencesToDefaultClick = { showResetPreferencesToDefaultDialog = true },
             )
         },
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.withoutBottom(),
     ) { contentPadding ->
         Settings(
             modifier = Modifier
                 .padding(contentPadding)
+                // consuming 'contentPadding' as window insets isn't needed here
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             data = data,
             strings = strings,
@@ -287,6 +293,16 @@ fun Settings(
                 description = strings.itemAutoProceedWithRandomizedColorsDesc,
                 checked = data.isAutoProceedWithRandomizedColorsEnabled,
                 onCheckedChange = data.changeAutoProceedWithRandomizedColorsEnablement,
+            )
+        }
+
+        item("spacer for navigation bar") {
+            val windowInsets = WindowInsets.systemBars.onlyBottom()
+            // visually the spacer will seem bigger due to spacing Arrangement of LazyColumn()
+            Spacer(
+                modifier = Modifier
+                    .padding(windowInsets.asPaddingValues())
+                    .consumeWindowInsets(windowInsets)
             )
         }
     }
