@@ -108,12 +108,14 @@ class MainActivity : AppCompatActivity() {
         val areDynamicColorsEnabled = mainViewModel.dynamicUiColorsFlow
             .collectAsStateWithLifecycle(initialValue = null).value
             ?.enabled
-            ?: return
+        // (Boolean && Boolean?) -> Boolean with fast route if first condition is false
+        val useDynamicColorScheme =
+            (areDynamicColorsAvailable() && (areDynamicColorsEnabled ?: return))
         val colorScheme = mainViewModel.appUiColorSchemeResolverFlow
             .collectAsStateWithLifecycle(initialValue = null).value
             ?.resolve(
                 brightness = systemBrightness(),
-                useDynamicColorSchemes = (areDynamicColorsEnabled && areDynamicColorsAvailable()),
+                useDynamicColorSchemes = useDynamicColorScheme
             )
             ?: return
 
