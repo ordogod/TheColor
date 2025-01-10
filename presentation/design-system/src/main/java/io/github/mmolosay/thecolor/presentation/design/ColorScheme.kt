@@ -23,6 +23,8 @@ enum class ColorScheme {
     Dark,
     DynamicLight,
     DynamicDark,
+    Jungle,
+    Midnight,
     ;
 }
 
@@ -42,6 +44,8 @@ fun ColorScheme.toMaterialColorScheme(context: Context): MaterialColorScheme {
             }
             dynamicDarkColorScheme(context)
         }
+        ColorScheme.Jungle -> jungleColorScheme
+        ColorScheme.Midnight -> midnightColorScheme
     }
 }
 
@@ -51,6 +55,88 @@ private val lightColorScheme: MaterialColorScheme by lazy {
 
 private val darkColorScheme: MaterialColorScheme by lazy {
     darkColorScheme()
+}
+
+private val jungleColorScheme: MaterialColorScheme by lazy {
+    MaterialColorScheme(
+        primary = Color(0xFF3C6838),
+        onPrimary = Color(0xFFFFFFFF),
+        primaryContainer = Color(0xFFBDF0B3),
+        onPrimaryContainer = Color(0xFF002203),
+        inversePrimary = Color(0xFFA2D399),
+        secondary = Color(0xFF53634E),
+        onSecondary = Color(0xFFFFFFFF),
+        secondaryContainer = Color(0xFFD6E8CE),
+        onSecondaryContainer = Color(0xFF111F0F),
+        tertiary = Color(0xFF38656A),
+        onTertiary = Color(0xFFFFFFFF),
+        tertiaryContainer = Color(0xFFBCEBF0),
+        onTertiaryContainer = Color(0xFF002022),
+        background = Color(0xFFF7FBF1),
+        onBackground = Color(0xFF191D17),
+        surface = Color(0xFFF7FBF1),
+        onSurface = Color(0xFF191D17),
+        surfaceVariant = Color(0xFFDEE5D8),
+        onSurfaceVariant = Color(0xFF424940),
+        surfaceTint = Color.Unspecified,
+        inverseSurface = Color(0xFF2D322B),
+        inverseOnSurface = Color(0xFFEFF2E9),
+        error = Color(0xFFBA1A1A),
+        onError = Color(0xFFFFFFFF),
+        errorContainer = Color(0xFFFFDAD6),
+        onErrorContainer = Color(0xFF410002),
+        outline = Color(0xFF73796F),
+        outlineVariant = Color(0xFFC2C8BD),
+        scrim = Color(0xFF000000),
+        surfaceBright = Color(0xFFF7FBF1),
+        surfaceDim = Color(0xFFD8DBD2),
+        surfaceContainer = Color(0xFFECEFE6),
+        surfaceContainerHigh = Color(0xFFE6E9E0),
+        surfaceContainerHighest = Color(0xFFE0E4DA),
+        surfaceContainerLow = Color(0xFFF2F5EB),
+        surfaceContainerLowest = Color(0xFFFFFFFF),
+    )
+}
+
+private val midnightColorScheme: MaterialColorScheme by lazy {
+    MaterialColorScheme(
+        primary = Color(0xFF9CCBFB),
+        onPrimary = Color(0xFF003354),
+        primaryContainer = Color(0xFF114A73),
+        onPrimaryContainer = Color(0xFFCFE5FF),
+        inversePrimary = Color(0xFF31628D),
+        secondary = Color(0xFFB9C8DA),
+        onSecondary = Color(0xFF243240),
+        secondaryContainer = Color(0xFF3A4857),
+        onSecondaryContainer = Color(0xFFD5E4F7),
+        tertiary = Color(0xFFD4BEE6),
+        onTertiary = Color(0xFF392A49),
+        tertiaryContainer = Color(0xFF504061),
+        onTertiaryContainer = Color(0xFFEFDBFF),
+        background = Color(0xFF101418),
+        onBackground = Color(0xFFE0E2E8),
+        surface = Color(0xFF101418),
+        onSurface = Color(0xFFE0E2E8),
+        surfaceVariant = Color(0xFF42474E),
+        onSurfaceVariant = Color(0xFFC2C7CF),
+        surfaceTint = Color.Unspecified,
+        inverseSurface = Color(0xFFE0E2E8),
+        inverseOnSurface = Color(0xFF2D3135),
+        error = Color(0xFFFFB4AB),
+        onError = Color(0xFF690005),
+        errorContainer = Color(0xFF93000A),
+        onErrorContainer = Color(0xFFFFDAD6),
+        outline = Color(0xFF8C9199),
+        outlineVariant = Color(0xFF42474E),
+        scrim = Color(0xFF000000),
+        surfaceBright = Color(0xFF36393E),
+        surfaceDim = Color(0xFF101418),
+        surfaceContainer = Color(0xFF1C2024),
+        surfaceContainerHigh = Color(0xFF272A2F),
+        surfaceContainerHighest = Color(0xFF32353A),
+        surfaceContainerLow = Color(0xFF181C20),
+        surfaceContainerLowest = Color(0xFF0B0E12),
+    )
 }
 
 /*
