@@ -44,5 +44,7 @@ fun DomainUiColorSchemeSet.toPresentation(): ColorSchemeResolver =
                 true -> ColorScheme.DynamicDark
                 false -> ColorScheme.Dark
             }
+            DomainUiColorScheme.Jungle -> ColorScheme.Jungle
+            DomainUiColorScheme.Midnight -> ColorScheme.Midnight
         }
     }

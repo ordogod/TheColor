@@ -345,6 +345,8 @@ private object UiColorSchemeMapper {
     private val valueToDtoStringMap = mapOf(
         UiColorScheme.Light to "light",
         UiColorScheme.Dark to "dark",
+        UiColorScheme.Jungle to "jungle",
+        UiColorScheme.Midnight to "midnight",
     )
 
     init {

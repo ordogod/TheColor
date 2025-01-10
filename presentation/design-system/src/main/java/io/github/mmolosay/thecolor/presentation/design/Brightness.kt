@@ -14,6 +14,8 @@ fun ColorScheme.brightness() =
         ColorScheme.Dark -> Brightness.Dark
         ColorScheme.DynamicLight -> Brightness.Light
         ColorScheme.DynamicDark -> Brightness.Dark
+        ColorScheme.Jungle -> Brightness.Light
+        ColorScheme.Midnight -> Brightness.Dark
     }
 
 @Composable
