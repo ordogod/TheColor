@@ -23,11 +23,11 @@ object DayNightColorSchemeResolver : ColorSchemeResolver {
     ): ColorScheme =
         when (brightness) {
             Brightness.Light -> when (useDynamicColorSchemes) {
-                true -> ColorScheme.LightDynamic
+                true -> ColorScheme.DynamicLight
                 false -> ColorScheme.Light
             }
             Brightness.Dark -> when (useDynamicColorSchemes) {
-                true -> ColorScheme.DarkDynamic
+                true -> ColorScheme.DynamicDark
                 false -> ColorScheme.Dark
             }
         }

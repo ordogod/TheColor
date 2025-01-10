@@ -12,8 +12,8 @@ fun ColorScheme.brightness() =
     when (this) {
         ColorScheme.Light -> Brightness.Light
         ColorScheme.Dark -> Brightness.Dark
-        ColorScheme.LightDynamic -> Brightness.Light
-        ColorScheme.DarkDynamic -> Brightness.Dark
+        ColorScheme.DynamicLight -> Brightness.Light
+        ColorScheme.DynamicDark -> Brightness.Dark
     }
 
 @Composable

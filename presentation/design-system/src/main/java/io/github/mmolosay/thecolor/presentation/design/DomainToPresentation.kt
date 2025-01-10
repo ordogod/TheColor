@@ -37,11 +37,11 @@ fun DomainUiColorSchemeSet.toPresentation(): ColorSchemeResolver =
         }
         when (domainColorScheme) {
             DomainUiColorScheme.Light -> when (useDynamicColorSchemes) {
-                true -> ColorScheme.LightDynamic
+                true -> ColorScheme.DynamicLight
                 false -> ColorScheme.Light
             }
             DomainUiColorScheme.Dark -> when (useDynamicColorSchemes) {
-                true -> ColorScheme.DarkDynamic
+                true -> ColorScheme.DynamicDark
                 false -> ColorScheme.Dark
             }
         }

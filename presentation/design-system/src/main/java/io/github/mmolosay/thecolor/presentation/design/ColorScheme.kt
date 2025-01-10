@@ -21,8 +21,8 @@ import androidx.compose.material3.ColorScheme as MaterialColorScheme
 enum class ColorScheme {
     Light,
     Dark,
-    LightDynamic,
-    DarkDynamic,
+    DynamicLight,
+    DynamicDark,
     ;
 }
 
@@ -30,13 +30,13 @@ fun ColorScheme.toMaterialColorScheme(context: Context): MaterialColorScheme {
     return when (this) {
         ColorScheme.Light -> lightColorScheme
         ColorScheme.Dark -> darkColorScheme
-        ColorScheme.LightDynamic -> {
+        ColorScheme.DynamicLight -> {
             if (!areDynamicColorsAvailable()) {
                 error("$this cannot be used: Dynamic color schemes are available only on Android 12+")
             }
             dynamicLightColorScheme(context)
         }
-        ColorScheme.DarkDynamic -> {
+        ColorScheme.DynamicDark -> {
             if (!areDynamicColorsAvailable()) {
                 error("$this cannot be used: Dynamic color schemes are available only on Android 12+")
             }
