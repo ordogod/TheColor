@@ -164,6 +164,10 @@ class SettingsViewModel @Inject constructor(
                 .also { add(it) }
             DomainUiColorSchemeSet.DayNight
                 .also { add(it) }
+            DomainUiColorScheme.Jungle.asSingletonSet()
+                .also { add(it) }
+            DomainUiColorScheme.Midnight.asSingletonSet()
+                .also { add(it) }
         }
 
     sealed interface DataState {

@@ -323,11 +323,13 @@ private fun DomainUiColorSchemeSet.toShortUiString(
         when (this.single()) {
             DomainUiColorScheme.Light -> strings.itemAppUiColorSchemeValueLight
             DomainUiColorScheme.Dark -> strings.itemAppUiColorSchemeValueDark
+            DomainUiColorScheme.Jungle -> strings.itemAppUiColorSchemeValueJungle
+            DomainUiColorScheme.Midnight -> strings.itemAppUiColorSchemeValueMidnight
         }
     } else {
         when (this) {
             DomainUiColorSchemeSet.DayNight -> strings.itemAppUiColorSchemeValueDayNightShort
-            else -> error("Unsupported UI color scheme mode")
+            else -> error("Unsupported UI color scheme set")
         }
     }
 
@@ -338,11 +340,13 @@ private fun DomainUiColorSchemeSet.toVerboseUiString(
         when (this.single()) {
             DomainUiColorScheme.Light -> strings.itemAppUiColorSchemeValueLight
             DomainUiColorScheme.Dark -> strings.itemAppUiColorSchemeValueDark
+            DomainUiColorScheme.Jungle -> strings.itemAppUiColorSchemeValueJungle
+            DomainUiColorScheme.Midnight -> strings.itemAppUiColorSchemeValueMidnight
         }
     } else {
         when (this) {
             DomainUiColorSchemeSet.DayNight -> strings.itemAppUiColorSchemeValueDayNightVerbose
-            else -> error("Unsupported UI color scheme mode")
+            else -> error("Unsupported UI color scheme set")
         }
     }
 
