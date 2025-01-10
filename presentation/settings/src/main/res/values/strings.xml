@@ -25,7 +25,7 @@
     <string name="settings_item_app_ui_color_scheme_value_midnight">Midnight</string>
 
     <string name="settings_item_dynamic_ui_colors_title">Dynamic colors for UI theme</string>
-    <string name="settings_item_dynamic_ui_colors_desc">Color scheme will be based on your wallpaper.</string>
+    <string name="settings_item_dynamic_ui_colors_desc">Color scheme will be based on your wallpaper.\nOnly works with Auto, Light, and Dark themes.</string>
 
     <string name="settings_item_resume_from_last_searched_color_title">Resume from last searched color</string>
     <string name="settings_item_resume_from_last_searched_color_desc">App will show last searched color on startup.</string>
