@@ -1,12 +1,16 @@
 package io.github.mmolosay.thecolor.presentation.design
 
+import android.content.Context
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import io.github.mmolosay.thecolor.presentation.design.Material3DynamicColorsAvailability.areDynamicColorsAvailable
 import androidx.compose.material3.ColorScheme as MaterialColorScheme
 
 /**
@@ -17,14 +21,29 @@ import androidx.compose.material3.ColorScheme as MaterialColorScheme
 enum class ColorScheme {
     Light,
     Dark,
+    DynamicLight,
+    DynamicDark,
     ;
 }
 
-fun ColorScheme.toMaterialColorScheme(): MaterialColorScheme =
-    when (this) {
+fun ColorScheme.toMaterialColorScheme(context: Context): MaterialColorScheme {
+    return when (this) {
         ColorScheme.Light -> lightColorScheme
         ColorScheme.Dark -> darkColorScheme
+        ColorScheme.DynamicLight -> {
+            if (!areDynamicColorsAvailable()) {
+                error("$this cannot be used: Dynamic color schemes are available only on Android 12+")
+            }
+            dynamicLightColorScheme(context)
+        }
+        ColorScheme.DynamicDark -> {
+            if (!areDynamicColorsAvailable()) {
+                error("$this cannot be used: Dynamic color schemes are available only on Android 12+")
+            }
+            dynamicDarkColorScheme(context)
+        }
     }
+}
 
 private val lightColorScheme: MaterialColorScheme by lazy {
     lightColorScheme()

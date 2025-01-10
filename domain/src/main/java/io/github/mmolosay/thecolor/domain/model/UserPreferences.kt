@@ -9,6 +9,13 @@ object UserPreferences {
         Light, Dark,
     }
 
+    /**
+     * A set of color schemes to choose from when resolving a color scheme to use in app's UI.
+     * [light] is used when device's Dark mode is OFF. [dark] when it's ON.
+     *
+     * Both values may be the same. In this case, a set is considered a singleton and color scheme
+     * is not sensitive to device's Dark mode.
+     */
     data class UiColorSchemeSet(
         val light: UiColorScheme,
         val dark: UiColorScheme,
@@ -27,6 +34,11 @@ object UserPreferences {
 
     fun UiColorSchemeSet.single(): UiColorScheme =
         this.light
+
+    @JvmInline
+    value class DynamicUiColors(
+        val enabled: Boolean,
+    )
 
     @JvmInline
     value class ResumeFromLastSearchedColorOnStartup(

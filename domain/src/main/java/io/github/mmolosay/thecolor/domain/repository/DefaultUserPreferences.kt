@@ -15,6 +15,9 @@ object DefaultUserPreferences {
     val AppUiColorSchemeSet: UserPreferences.UiColorSchemeSet =
         UserPreferences.UiColorSchemeSet.DayNight
 
+    val DynamicUiColors: UserPreferences.DynamicUiColors =
+        UserPreferences.DynamicUiColors(enabled = true)
+
     val ResumeFromLastSearchedColorOnStartup =
         UserPreferences.ResumeFromLastSearchedColorOnStartup(enabled = true)
 

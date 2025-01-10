@@ -35,6 +35,7 @@ import io.github.mmolosay.debounce.debounced
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.asSingletonSet
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.isSingleton
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.single
+import io.github.mmolosay.thecolor.presentation.design.Material3DynamicColorsAvailability.areDynamicColorsAvailable
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.impl.onlyBottom
 import io.github.mmolosay.thecolor.presentation.impl.withoutBottom
@@ -242,6 +243,17 @@ fun Settings(
             }
         }
 
+        if (areDynamicColorsAvailable()) {
+            item("dynamic ui colors") {
+                DynamicUiColors(
+                    title = strings.itemDynamicUiColorsTitle,
+                    description = strings.itemDynamicUiColorsDesc,
+                    checked = data.isDynamicUiColorsEnabled,
+                    onCheckedChange = data.changeDynamicUiColorsEnablement,
+                )
+            }
+        }
+
         item("resume from last searched color") {
             ResumeFromLastSearchedColor(
                 title = strings.itemResumeFromLastSearchedColorTitle,
@@ -343,6 +355,9 @@ private fun previewData() =
             DomainUiColorSchemeSet.DayNight,
         ),
         changeAppUiColorSchemeSet = {},
+
+        isDynamicUiColorsEnabled = true,
+        changeDynamicUiColorsEnablement = {},
 
         isResumeFromLastSearchedColorOnStartupEnabled = true,
         changeResumeFromLastSearchedColorOnStartupEnablement = {},

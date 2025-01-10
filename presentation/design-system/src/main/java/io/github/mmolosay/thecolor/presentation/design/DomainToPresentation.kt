@@ -8,15 +8,6 @@ import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorSchemeSet
  */
 
 /**
- * Maps [DomainUiColorScheme] of Domain layer to [ColorScheme] of Presentation layer and vice versa.
- */
-fun DomainUiColorScheme.toPresentation(): ColorScheme =
-    when (this) {
-        DomainUiColorScheme.Light -> ColorScheme.Light
-        DomainUiColorScheme.Dark -> ColorScheme.Dark
-    }
-
-/**
  * Maps [DomainUiColorSchemeSet] of Domain layer to a [ColorSchemeResolver] of Presentation layer.
  *
  * ### Reasoning behind having [ColorSchemeResolver] as returned type instead of [ColorScheme]
@@ -39,10 +30,19 @@ fun DomainUiColorScheme.toPresentation(): ColorScheme =
  * which falls well within View's scope of responsibility.
  */
 fun DomainUiColorSchemeSet.toPresentation(): ColorSchemeResolver =
-    ColorSchemeResolver { brightness ->
+    ColorSchemeResolver { brightness, useDynamicColorSchemes ->
         val domainColorScheme = when (brightness) {
             Brightness.Light -> this.light
             Brightness.Dark -> this.dark
         }
-        domainColorScheme.toPresentation()
+        when (domainColorScheme) {
+            DomainUiColorScheme.Light -> when (useDynamicColorSchemes) {
+                true -> ColorScheme.DynamicLight
+                false -> ColorScheme.Light
+            }
+            DomainUiColorScheme.Dark -> when (useDynamicColorSchemes) {
+                true -> ColorScheme.DynamicDark
+                false -> ColorScheme.Dark
+            }
+        }
     }
