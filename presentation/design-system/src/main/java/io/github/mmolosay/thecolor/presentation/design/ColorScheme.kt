@@ -10,7 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import io.github.mmolosay.thecolor.presentation.design.DynamicColorsAvailability.areDynamicColorsAvailable
+import io.github.mmolosay.thecolor.presentation.design.Material3DynamicColorsAvailability.areDynamicColorsAvailable
 import androidx.compose.material3.ColorScheme as MaterialColorScheme
 
 /**
