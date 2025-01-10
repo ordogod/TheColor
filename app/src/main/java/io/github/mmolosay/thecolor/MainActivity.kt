@@ -1,7 +1,6 @@
 package io.github.mmolosay.thecolor
 
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -19,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.mmolosay.thecolor.presentation.design.Brightness
+import io.github.mmolosay.thecolor.presentation.design.DynamicColorsAvailability.areDynamicColorsAvailable
 import io.github.mmolosay.thecolor.presentation.design.LocalDefaultShouldUseLightTintForNavBarControls
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.animateColors
@@ -109,12 +109,11 @@ class MainActivity : AppCompatActivity() {
             .collectAsStateWithLifecycle(initialValue = null).value
             ?.enabled
             ?: return
-        val areDynamicColorsAvailable = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
         val colorScheme = mainViewModel.appUiColorSchemeResolverFlow
             .collectAsStateWithLifecycle(initialValue = null).value
             ?.resolve(
                 brightness = systemBrightness(),
-                useDynamicColorSchemes = (areDynamicColorsEnabled && areDynamicColorsAvailable),
+                useDynamicColorSchemes = (areDynamicColorsEnabled && areDynamicColorsAvailable()),
             )
             ?: return
 

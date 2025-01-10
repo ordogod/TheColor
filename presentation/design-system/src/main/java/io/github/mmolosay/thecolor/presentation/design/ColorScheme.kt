@@ -1,7 +1,6 @@
 package io.github.mmolosay.thecolor.presentation.design
 
 import android.content.Context
-import android.os.Build
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -11,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import io.github.mmolosay.thecolor.presentation.design.DynamicColorsAvailability.areDynamicColorsAvailable
 import androidx.compose.material3.ColorScheme as MaterialColorScheme
 
 /**
@@ -26,27 +26,24 @@ enum class ColorScheme {
     ;
 }
 
-fun ColorScheme.toMaterialColorScheme(context: Context): MaterialColorScheme =
-    when (this) {
+fun ColorScheme.toMaterialColorScheme(context: Context): MaterialColorScheme {
+    return when (this) {
         ColorScheme.Light -> lightColorScheme
         ColorScheme.Dark -> darkColorScheme
         ColorScheme.LightDynamic -> {
-            check(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                "$this cannot be used: Dynamic color schemes are available only on Android 12+"
+            if (!areDynamicColorsAvailable()) {
+                error("$this cannot be used: Dynamic color schemes are available only on Android 12+")
             }
-            // contract of check() doesn't work here, suppressing manually
-            @Suppress("NewApi")
             dynamicLightColorScheme(context)
         }
         ColorScheme.DarkDynamic -> {
-            check(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                "$this cannot be used: Dynamic color schemes are available only on Android 12+"
+            if (!areDynamicColorsAvailable()) {
+                error("$this cannot be used: Dynamic color schemes are available only on Android 12+")
             }
-            // contract of check() doesn't work here, suppressing manually
-            @Suppress("NewApi")
             dynamicDarkColorScheme(context)
         }
     }
+}
 
 private val lightColorScheme: MaterialColorScheme by lazy {
     lightColorScheme()
