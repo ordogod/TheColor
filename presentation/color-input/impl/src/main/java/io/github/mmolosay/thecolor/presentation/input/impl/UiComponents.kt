@@ -1,17 +1,19 @@
 package io.github.mmolosay.thecolor.presentation.input.impl
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -28,74 +30,136 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
-import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiData
-import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiData.TrailingButton
+import io.github.mmolosay.thecolor.presentation.impl.thenIf
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.TrailingButton
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiStrings
+import io.github.mmolosay.thecolor.presentation.input.impl.model.ColorSubmissionResult
+import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
 
 /**
- * Reusable UI components for color input Views.
+ * Reusable UI components for 'Color Input' Views.
  */
 internal object UiComponents {
 
     @Composable
-    fun Loading() =
-        CircularProgressIndicator(
-            modifier = Modifier
-                .fillMaxSize()
-                .wrapContentSize()
-        )
-
-    @Composable
     fun TextField(
-        modifier: Modifier = Modifier,
-        uiData: TextFieldUiData,
+        data: TextFieldData,
+        strings: TextFieldUiStrings,
         value: TextFieldValue,
-        updateValue: (TextFieldValue) -> Unit,
+        onValueChange: (TextFieldValue) -> Unit,
         keyboardOptions: KeyboardOptions,
         keyboardActions: KeyboardActions,
-    ) =
-        with(uiData) {
-            OutlinedTextField(
-                modifier = modifier
-                    .selectAllTextOnFocus(
+        modifier: Modifier = Modifier,
+    ) {
+        OutlinedTextField(
+            modifier = modifier
+                .thenIf(data.shouldSelectAllTextOnFocus) {
+                    selectAllTextOnFocus(
                         value = value,
-                        onValueChange = updateValue,
-                    ),
-                value = value,
-                onValueChange = { new ->
-                    // can't just pass new.text to ViewModel for filtering: TextFieldValue.selection will be lost
-                    val filteredText = filterUserInput(new.text)
-                    val filteredValue = new.copy(text = filteredText.string)
-                    updateValue(filteredValue)
-                    onTextChange(filteredText)
+                        onValueChange = onValueChange,
+                    )
                 },
-                textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.SansSerif),
-                label = { Label(label) },
-                placeholder = { Placeholder(placeholder) },
-                trailingIcon = { TrailingButton(trailingButton) },
-                prefix = if (prefix != null) ({ Prefix(prefix) }) else null,
-                keyboardOptions = keyboardOptions,
-                keyboardActions = keyboardActions,
-                singleLine = true,
-            )
-            // for when text is cleared with trailing button or set programmatically
-            LaunchedEffect(text) {
-                val old = value
-                val newText = text.string
-                val hadSelectionAtTheEnd = (old.selection.end == old.text.length)
-                val isNewTextLongerThanOld = (newText.length > old.text.length)
-                // if it was "123|" become "123456|" instead of "123|456"
-                val newSelection = if (hadSelectionAtTheEnd && isNewTextLongerThanOld) {
-                    TextRange(index = newText.length)
+            value = value,
+            onValueChange = { new ->
+                val current = value
+                if (current.text != new.text) {
+                    // can't just pass new.text to ViewModel for filtering: TextFieldValue.selection will be lost
+                    val filteredText = data.filterUserInput(new.text)
+                    val filteredValue = new.copy(text = filteredText.string)
+                    onValueChange(filteredValue)
+                    data.onTextChange(filteredText)
                 } else {
-                    old.selection
+                    onValueChange(new)
                 }
-                val new = old.copy(text = newText, selection = newSelection)
-                updateValue(new)
+            },
+            textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.SansSerif),
+            label = { Label(text = strings.label) },
+            placeholder = { Placeholder(text = strings.placeholder) },
+            trailingIcon = {
+                TrailingButton(
+                    data = data.trailingButton,
+                    iconContentDesc = strings.trailingIconContentDesc,
+                )
+            },
+            prefix = if (strings.prefix != null)
+                ({ Prefix(text = strings.prefix) })
+            else null,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            singleLine = true,
+        )
+        // for when text is cleared with trailing button or set programmatically
+        LaunchedEffect(data.text) {
+            val old = value
+            val newText = data.text.string
+            val hadSelectionAtTheEnd = (old.selection.end == old.text.length)
+            val isNewTextLongerThanOld = (newText.length > old.text.length)
+            // if it was "123|" become "123456|" instead of "123|456"
+            val newSelection = if (hadSelectionAtTheEnd && isNewTextLongerThanOld) {
+                TextRange(index = newText.length)
+            } else {
+                old.selection
             }
+            val new = old.copy(text = newText, selection = newSelection)
+            onValueChange(new)
         }
+    }
+
+    @OptIn(ExperimentalAnimationApi::class)
+    @Composable
+    fun <T> DataStateCrossfade(
+        actualDataState: DataState<T>,
+        content: @Composable (targetState: DataState<T>) -> Unit,
+    ) {
+        val transition = updateTransition(
+            targetState = actualDataState,
+            label = "data state cross-fade",
+        )
+        val animationSpec = tween<Float>(
+            durationMillis = 500,
+            easing = FastOutSlowInEasing,
+        )
+        transition.Crossfade(
+            animationSpec = animationSpec,
+            contentKey = { it::class }, // don't animate when 'DataState' type stays the same,
+            content = content,
+        )
+    }
+
+    @Composable
+    fun ProcessColorSubmissionResultAsSideEffect(
+        result: ColorSubmissionResult?,
+    ) {
+        val keyboardController = LocalSoftwareKeyboardController.current
+        LaunchedEffect(result) {
+            result ?: return@LaunchedEffect
+            // color input was rejected, thus user will probably want to correct it and needs keyboard
+            if (result.wasAccepted.not()) return@LaunchedEffect
+            // color input was accepted, thus user probably won't change it and doesn't need keyboard
+            keyboardController?.hide()
+            result.discard()
+        }
+    }
+
+    fun Modifier.onBackspace(
+        onBackspace: () -> Unit,
+    ) = this.onKeyEvent { keyEvent ->
+        if (keyEvent.key == Key.Backspace && keyEvent.type == KeyEventType.KeyUp) {
+            onBackspace()
+            return@onKeyEvent true
+        }
+        return@onKeyEvent false
+    }
 
     @Composable
     private fun Label(text: String) =
@@ -113,31 +177,41 @@ internal object UiComponents {
         )
 
     @Composable
-    private fun TrailingButton(uiData: TrailingButton) {
+    private fun TrailingButton(
+        data: TrailingButton,
+        iconContentDesc: String?,
+    ) {
         // when uiData is Hidden, we want to have memoized Visible data for some time while "exit" animation is running
-        var visibleUiData by remember { mutableStateOf<TrailingButton.Visible?>(null) }
+        var visibleData by remember { mutableStateOf<TrailingButton.Visible?>(null) }
         val resizingAlignment = Alignment.Center
         AnimatedVisibility(
-            visible = uiData is TrailingButton.Visible,
+            visible = data is TrailingButton.Visible,
             enter = fadeIn() + expandIn(expandFrom = resizingAlignment),
             exit = fadeOut() + shrinkOut(shrinkTowards = resizingAlignment),
         ) {
-            val lastVisible = visibleUiData ?: return@AnimatedVisibility
-            ClearIconButton(lastVisible)
+            val lastVisible = visibleData ?: return@AnimatedVisibility
+            iconContentDesc ?: return@AnimatedVisibility
+            ClearIconButton(
+                onClick = lastVisible.onClick,
+                iconContentDesc = iconContentDesc,
+            )
         }
-        LaunchedEffect(uiData) {
-            visibleUiData = uiData as? TrailingButton.Visible ?: return@LaunchedEffect
+        LaunchedEffect(data) {
+            visibleData = data as? TrailingButton.Visible ?: return@LaunchedEffect
         }
     }
 
     @Composable
-    private fun ClearIconButton(uiData: TrailingButton.Visible) {
+    private fun ClearIconButton(
+        onClick: () -> Unit,
+        iconContentDesc: String,
+    ) {
         IconButton(
-            onClick = uiData.onClick,
+            onClick = onClick,
         ) {
             Icon(
                 imageVector = Icons.Default.Clear,
-                contentDescription = uiData.iconContentDesc,
+                contentDescription = iconContentDesc,
             )
         }
     }

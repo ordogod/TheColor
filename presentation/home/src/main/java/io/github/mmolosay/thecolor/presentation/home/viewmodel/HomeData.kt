@@ -1,6 +1,7 @@
 package io.github.mmolosay.thecolor.presentation.home.viewmodel
 
 import io.github.mmolosay.thecolor.presentation.api.ColorInt
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel
 
 /**
  * Platform-agnostic data provided by ViewModel to 'Home' View.
@@ -8,7 +9,9 @@ import io.github.mmolosay.thecolor.presentation.api.ColorInt
 data class HomeData(
     val canProceed: CanProceed,
     val proceedResult: ProceedResult?,
-    val goToSettings: () -> Unit,
+    val randomizeColor: () -> Unit,
+    val colorSchemeSelectedSwatchData: ColorSchemeSelectedSwatchData?,
+    val requestToGoToSettings: () -> Unit,
 ) {
 
     sealed interface CanProceed {
@@ -27,11 +30,17 @@ data class HomeData(
             val colorData: ColorData,
         ) : ProceedResult {
 
-            /** A data of color that was used to proceed */
+            /** A data of color that was used to proceed. */
             data class ColorData(
                 val color: ColorInt,
                 val isDark: Boolean,
             )
         }
     }
+
+    /** Data for currently selected swatch on 'Color Scheme'. */
+    data class ColorSchemeSelectedSwatchData(
+        val colorDetailsViewModel: ColorDetailsViewModel,
+        val discard: () -> Unit, // aka onConsumed()
+    )
 }

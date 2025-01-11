@@ -1,28 +1,35 @@
 package io.github.mmolosay.thecolor.presentation.design
 
+import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
+// prefer using 'colorsOnTintedSurface' to get and 'ProvideColorsOnTintedSurface' to set
 val LocalColorsOnTintedSurface = compositionLocalOf<ColorsOnTintedSurface> {
     error("CompositionLocal \"LocalColorsOnTintedSurface\" doesn't have value by default.")
 }
 
 val colorsOnTintedSurface: ColorsOnTintedSurface
     @Composable
-    get() = LocalColorsOnTintedSurface.current
+    @ReadOnlyComposable
+    inline get() = LocalColorsOnTintedSurface.current
 
 @Composable
 fun ProvideColorsOnTintedSurface(
     colors: ColorsOnTintedSurface,
     contentColor: Color = colors.accent,
+    rippleTheme: RippleTheme = ProminentRippleTheme,
     content: @Composable () -> Unit,
 ) =
     CompositionLocalProvider(
         LocalColorsOnTintedSurface provides colors,
-        LocalContentColor provides contentColor, // for MaterialRippleTheme
+        LocalContentColor provides contentColor, // for MaterialRippleTheme and ProminentRippleTheme
+        LocalRippleTheme provides rippleTheme,
         content = content,
     )
 

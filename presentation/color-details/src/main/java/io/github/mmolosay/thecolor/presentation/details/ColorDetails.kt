@@ -22,15 +22,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.mmolosay.thecolor.presentation.api.ColorInt
 import io.github.mmolosay.thecolor.presentation.design.ProvideColorsOnTintedSurface
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnLightSurface
 import io.github.mmolosay.thecolor.presentation.design.colorsOnTintedSurface
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsUiData.ColorSpec
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsUiData.ColorTranslation
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsUiData.ColorTranslations
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsViewModel.DataState
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel.DataState
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsError
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel
 import io.github.mmolosay.thecolor.presentation.errors.ErrorMessageWithButton
 import io.github.mmolosay.thecolor.presentation.errors.message
 import io.github.mmolosay.thecolor.presentation.errors.rememberDefaultErrorsUiStrings
@@ -41,21 +42,21 @@ fun ColorDetails(
     viewModel: ColorDetailsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
+    val dataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
     ColorDetails(
-        state = state,
+        dataState = dataState,
         modifier = modifier,
     )
 }
 
 @Composable
 fun ColorDetails(
-    state: DataState,
+    dataState: DataState,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorDetailsUiStrings(context) }
-    when (state) {
+    when (dataState) {
         is DataState.Idle -> {
             doNothing() // Color Details shouldn't be visible at Home at this point
         }
@@ -63,21 +64,22 @@ fun ColorDetails(
             ColorDetailsLoading()
         }
         is DataState.Ready -> {
-            val uiData = ColorDetailsUiData(state.data, strings)
             ColorDetails(
-                uiData = uiData,
+                data = dataState.data,
+                strings = strings,
                 modifier = modifier,
             )
         }
         is DataState.Error -> {
-            Error(error = state.error)
+            Error(error = dataState.error)
         }
     }
 }
 
 @Composable
 fun ColorDetails(
-    uiData: ColorDetailsUiData,
+    data: ColorDetailsData,
+    strings: ColorDetailsUiStrings,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -85,12 +87,19 @@ fun ColorDetails(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Headline(
-            text = uiData.headline,
+            text = data.colorName,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-        ColorTranslations(uiData.translations)
+        ColorTranslations(
+            hex = data.hex,
+            rgb = data.rgb,
+            hsl = data.hsl,
+            hsv = data.hsv,
+            cmyk = data.cmyk,
+            strings = strings,
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
         Column(
@@ -100,8 +109,11 @@ fun ColorDetails(
 
             Spacer(modifier = Modifier.height(16.dp))
             ColorSpecs(
-                specs = uiData.specs,
                 modifier = Modifier.align(Alignment.Start),
+                colorName = data.colorName,
+                exactMatch = data.exactMatch,
+                initialColorData = data.initialColorData,
+                strings = strings,
             )
         }
     }
@@ -161,9 +173,9 @@ private fun PreviewLight() {
     TheColorTheme {
         val colors = remember { colorsOnDarkSurface() }
         ProvideColorsOnTintedSurface(colors) {
-            ColorDetails(
-                uiData = previewUiData(),
+            ColorDetailsWithPreviewData(
                 modifier = Modifier.background(Color(0xFF_1A803F)),
+                data = previewData(),
             )
         }
     }
@@ -175,9 +187,9 @@ private fun PreviewDark() {
     TheColorTheme {
         val colors = remember { colorsOnLightSurface() }
         ProvideColorsOnTintedSurface(colors) {
-            ColorDetails(
-                uiData = previewUiData(),
+            ColorDetailsWithPreviewData(
                 modifier = Modifier.background(Color(0xFF_F0F8FF)),
+                data = previewData(),
             )
         }
     }
@@ -189,9 +201,9 @@ private fun PreviewExactLight() {
     TheColorTheme {
         val colors = remember { colorsOnDarkSurface() }
         ProvideColorsOnTintedSurface(colors) {
-            ColorDetails(
-                uiData = previewExactUiData(),
+            ColorDetailsWithPreviewData(
                 modifier = Modifier.background(Color(0xFF_126B40)),
+                data = previewDataExact(),
             )
         }
     }
@@ -203,118 +215,108 @@ private fun PreviewExactDark() {
     TheColorTheme {
         val colors = remember { colorsOnLightSurface() }
         ProvideColorsOnTintedSurface(colors) {
-            ColorDetails(
-                uiData = previewExactUiData(),
+            ColorDetailsWithPreviewData(
                 modifier = Modifier.background(Color(0xFF_F0F8FF)),
+                data = previewDataExact(),
             )
         }
     }
 }
 
-private fun previewUiData() =
-    ColorDetailsUiData(
-        headline = "Jewel",
-        translations = ColorTranslations(
-            hex = ColorTranslation.Hex(
-                label = "HEX",
-                value = "#1A803F",
-            ),
-            rgb = ColorTranslation.Rgb(
-                label = "RGB",
-                r = "26",
-                g = "128",
-                b = "63",
-            ),
-            hsl = ColorTranslation.Hsl(
-                label = "HSL",
-                h = "142",
-                s = "66",
-                l = "30",
-            ),
-            hsv = ColorTranslation.Hsv(
-                label = "HSV",
-                h = "142",
-                s = "80",
-                v = "50",
-            ),
-            cmyk = ColorTranslation.Cmyk(
-                label = "CMYK",
-                c = "80",
-                m = "0",
-                y = "51",
-                k = "50",
-            ),
+@Composable
+private fun ColorDetailsWithPreviewData(
+    modifier: Modifier,
+    data: ColorDetailsData,
+) {
+    ColorDetails(
+        modifier = modifier,
+        data = data,
+        strings = previewUiStrings(),
+    )
+}
+
+private fun previewData() =
+    ColorDetailsData(
+        colorName = "Jewel",
+        hex = ColorDetailsData.Hex(
+            value = "#1A803F",
         ),
-        specs = listOf(
-            ColorSpec.Name(
-                label = "NAME",
-                value = "Jewel",
-            ),
-            ColorSpec.ExactMatch(
-                label = "EXACT MATCH",
-                value = "No",
-                goBackToInitialColorButton = null,
-            ),
-            ColorSpec.ExactValue(
-                label = "EXACT VALUE",
-                value = "#126B40",
-                exactColor = Color(0xFF126B40),
-                onClick = {},
-            ),
-            ColorSpec.Deviation(
-                label = "DEVIATION",
-                value = "1366",
-            ),
+        rgb = ColorDetailsData.Rgb(
+            r = "26",
+            g = "128",
+            b = "63",
+        ),
+        hsl = ColorDetailsData.Hsl(
+            h = "142",
+            s = "66",
+            l = "30",
+        ),
+        hsv = ColorDetailsData.Hsv(
+            h = "142",
+            s = "80",
+            v = "50",
+        ),
+        cmyk = ColorDetailsData.Cmyk(
+            c = "80",
+            m = "0",
+            y = "51",
+            k = "50",
+        ),
+        exactMatch = ColorDetailsData.ExactMatch.No(
+            exactValue = "#126B40",
+            exactColor = ColorInt(0x126B40),
+            goToExactColor = {},
+            deviation = "1366",
+        ),
+        initialColorData = null,
+    )
+
+private fun previewDataExact() =
+    ColorDetailsData(
+        colorName = "Jewel",
+        hex = ColorDetailsData.Hex(
+            value = "#1A803F",
+        ),
+        rgb = ColorDetailsData.Rgb(
+            r = "26",
+            g = "128",
+            b = "63",
+        ),
+        hsl = ColorDetailsData.Hsl(
+            h = "142",
+            s = "66",
+            l = "30",
+        ),
+        hsv = ColorDetailsData.Hsv(
+            h = "142",
+            s = "80",
+            v = "50",
+        ),
+        cmyk = ColorDetailsData.Cmyk(
+            c = "80",
+            m = "0",
+            y = "51",
+            k = "50",
+        ),
+        exactMatch = ColorDetailsData.ExactMatch.Yes,
+        initialColorData = ColorDetailsData.InitialColorData(
+            initialColor = ColorInt(0x1A803F),
+            goToInitialColor = {},
         ),
     )
 
-private fun previewExactUiData() =
-    ColorDetailsUiData(
-        headline = "Jewel",
-        translations = ColorTranslations(
-            hex = ColorTranslation.Hex(
-                label = "HEX",
-                value = "#126B40",
-            ),
-            rgb = ColorTranslation.Rgb(
-                label = "RGB",
-                r = "18",
-                g = "107",
-                b = "64",
-            ),
-            hsl = ColorTranslation.Hsl(
-                label = "HSL",
-                h = "151",
-                s = "71",
-                l = "25",
-            ),
-            hsv = ColorTranslation.Hsv(
-                label = "HSV",
-                h = "151",
-                s = "83",
-                v = "42",
-            ),
-            cmyk = ColorTranslation.Cmyk(
-                label = "CMYK",
-                c = "83",
-                m = "0",
-                y = "40",
-                k = "58",
-            ),
-        ),
-        specs = listOf(
-            ColorSpec.Name(
-                label = "NAME",
-                value = "Jewel",
-            ),
-            ColorSpec.ExactMatch(
-                label = "EXACT MATCH",
-                value = "Yes",
-                goBackToInitialColorButton = ColorSpec.ExactMatch.GoBackToInitialColorButton(
-                    text = "Go back to",
-                    initialColor = Color(0xFF1A803f),
-                    onClick = {},
-                )
-            ),
-        ),
+private fun previewUiStrings() =
+    ColorDetailsUiStrings(
+        hexLabel = "HEX",
+        rgbLabel = "RGB",
+        hslLabel = "HSL",
+        hsvLabel = "HSV",
+        cmykLabel = "CMYK",
+        nameLabel = "NAME",
+        exactMatchLabel = "EXACT MATCH",
+        exactMatchYes = "Yes",
+        exactMatchNo = "No",
+        goBackToInitialColorButtonText = "Go back to",
+        exactValueLabel = "EXACT VALUE",
+        deviationLabel = "DEVIATION",
     )

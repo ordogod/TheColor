@@ -6,14 +6,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -21,12 +22,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
-import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.Loading
-import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.TextField
+import io.github.mmolosay.thecolor.presentation.impl.thenIf
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.DataStateCrossfade
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.ProcessColorSubmissionResultAsSideEffect
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.onBackspace
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.Text
-import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiData
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
-import io.github.mmolosay.thecolor.presentation.input.impl.model.hideSoftwareKeyboardCommandOrNull
 
 @Composable
 fun ColorInputRgb(
@@ -34,76 +38,136 @@ fun ColorInputRgb(
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorInputRgbUiStrings(context) }
-    val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
+    val dataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
     val colorSubmissionResult =
         viewModel.colorSubmissionResultFlow.collectAsStateWithLifecycle().value
-    val keyboardController = LocalSoftwareKeyboardController.current
 
-    when (state) {
-        is DataState.BeingInitialized ->
-            Loading()
-        is DataState.Ready -> {
-            val uiData = ColorInputRgbUiData(state.data, strings)
-            ColorInputRgb(uiData)
+    DataStateCrossfade(
+        actualDataState = dataState,
+    ) { state ->
+        when (state) {
+            is DataState.BeingInitialized ->
+                ColorInputRgbLoading()
+            is DataState.Ready -> {
+                ColorInputRgb(
+                    data = state.data,
+                    strings = strings,
+                )
+            }
         }
     }
 
-    val hideSoftwareKeyboardCommand = hideSoftwareKeyboardCommandOrNull(colorSubmissionResult)
-    LaunchedEffect(hideSoftwareKeyboardCommand) {
-        val command = hideSoftwareKeyboardCommand ?: return@LaunchedEffect
-        keyboardController?.hide()
-        command.onExecuted()
-    }
+    ProcessColorSubmissionResultAsSideEffect(
+        result = colorSubmissionResult,
+    )
 }
 
 @Composable
 fun ColorInputRgb(
-    uiData: ColorInputRgbUiData,
+    data: ColorInputRgbData,
+    strings: ColorInputRgbUiStrings,
 ) {
     Row {
         @Composable
         fun SpacerInBetween() = Spacer(modifier = Modifier.width(16.dp))
 
         val modifier = Modifier.weight(1f)
+        val isSmartBackspaceEnabled = data.isSmartBackspaceEnabled
 
-        TextField(
+        // R
+        ComponentAdvancedTextField(
             modifier = modifier,
-            uiData = uiData.rTextField,
+            data = data.rTextField,
+            strings = strings.rTextField,
             imeAction = ImeAction.Next,
+            hasPreviousComponent = false, // for R there's no previous
+            enableSmartBackspace = isSmartBackspaceEnabled,
         )
 
+        // G
         SpacerInBetween()
-        TextField(
+        ComponentAdvancedTextField(
             modifier = modifier,
-            uiData = uiData.gTextField,
+            data = data.gTextField,
+            strings = strings.gTextField,
             imeAction = ImeAction.Next,
+            hasPreviousComponent = true, // for G previous is R
+            enableSmartBackspace = isSmartBackspaceEnabled,
         )
 
+
+        // B
         SpacerInBetween()
-        TextField(
+        ComponentAdvancedTextField(
             modifier = modifier,
-            uiData = uiData.bTextField,
+            data = data.bTextField,
+            strings = strings.bTextField,
             imeAction = ImeAction.Done,
             keyboardActions = KeyboardActions(
-                onDone = { uiData.onImeActionDone() },
+                onDone = { data.submitColor() },
             ),
+            hasPreviousComponent = true, // for B previous is G
+            enableSmartBackspace = isSmartBackspaceEnabled,
         )
     }
 }
 
+/**
+ * A wrapper for [ComponentBasicTextField] with additional features, such as "smart backspace".
+ */
 @Composable
-private fun TextField(
+private fun ComponentAdvancedTextField(
+    data: TextFieldData,
+    strings: TextFieldUiStrings,
+    imeAction: ImeAction,
+    hasPreviousComponent: Boolean,
+    enableSmartBackspace: Boolean,
     modifier: Modifier = Modifier,
-    uiData: TextFieldUiData,
+    keyboardActions: KeyboardActions = KeyboardActions(),
+) {
+    val focusManager = LocalFocusManager.current
+    ComponentBasicTextField(
+        modifier = modifier
+            .thenIf(enableSmartBackspace) {
+                onBackspace {
+                    val text = data.text.string
+                    if (text.isEmpty() && hasPreviousComponent) {
+                        focusManager.moveFocus(FocusDirection.Previous)
+                    }
+            }
+        },
+        data = data,
+        strings = strings,
+        imeAction = imeAction,
+        keyboardActions = keyboardActions,
+    )
+}
+
+/**
+ * A wrapper for [UiComponents.TextField] that just manages [TextFieldValue].
+ */
+@Composable
+private fun ComponentBasicTextField(
+    modifier: Modifier = Modifier,
+    data: TextFieldData,
+    strings: TextFieldUiStrings,
     imeAction: ImeAction,
     keyboardActions: KeyboardActions = KeyboardActions(),
 ) {
-    var value by remember { mutableStateOf(TextFieldValue(text = uiData.text.string)) }
-    TextField(
+    var value by remember {
+        val text = data.text.string
+        val value = TextFieldValue(
+            text = text,
+            selection = TextRange(index = text.length), // cursor at the end of the text
+        )
+        mutableStateOf(value)
+    }
+    UiComponents.TextField(
         modifier = modifier,
-        uiData = uiData,
+        data = data,
+        strings = strings,
         value = value,
-        updateValue = { new -> value = new },
+        onValueChange = { new -> value = new },
         keyboardOptions = KeyboardOptions(
             imeAction = imeAction,
             keyboardType = KeyboardType.Number,
@@ -117,48 +181,57 @@ private fun TextField(
 private fun Preview() {
     TheColorTheme {
         ColorInputRgb(
-            uiData = previewUiData(),
+            data = previewData(),
+            strings = previewUiStrings(),
         )
     }
 }
 
-private fun previewUiData() =
-    ColorInputRgbUiData(
-        rTextField = TextFieldUiData(
+private fun previewData() =
+    ColorInputRgbData(
+        rTextField = TextFieldData(
             text = Text("12"),
             onTextChange = {},
             filterUserInput = { Text(it) },
-            label = "R",
-            placeholder = "0",
-            prefix = "",
-            trailingButton = TextFieldUiData.TrailingButton.Visible(
-                onClick = {},
-                iconContentDesc = "",
-            ),
+            trailingButton = TextFieldData.TrailingButton.Hidden,
+            shouldSelectAllTextOnFocus = false,
         ),
-        gTextField = TextFieldUiData(
+        gTextField = TextFieldData(
             text = Text(""),
             onTextChange = {},
             filterUserInput = { Text(it) },
-            label = "G",
-            placeholder = "0",
-            prefix = "",
-            trailingButton = TextFieldUiData.TrailingButton.Visible(
-                onClick = {},
-                iconContentDesc = "",
-            ),
+            trailingButton = TextFieldData.TrailingButton.Hidden,
+            shouldSelectAllTextOnFocus = false,
         ),
-        bTextField = TextFieldUiData(
+        bTextField = TextFieldData(
             text = Text("255"),
             onTextChange = {},
             filterUserInput = { Text(it) },
+            trailingButton = TextFieldData.TrailingButton.Hidden,
+            shouldSelectAllTextOnFocus = false,
+        ),
+        submitColor = {},
+        isSmartBackspaceEnabled = true,
+    )
+
+private fun previewUiStrings() =
+    ColorInputRgbUiStrings(
+        rTextField = TextFieldUiStrings(
+            label = "R",
+            placeholder = "0",
+            prefix = null,
+            trailingIconContentDesc = null,
+        ),
+        gTextField = TextFieldUiStrings(
+            label = "G",
+            placeholder = "0",
+            prefix = null,
+            trailingIconContentDesc = null,
+        ),
+        bTextField = TextFieldUiStrings(
             label = "B",
             placeholder = "0",
-            prefix = "",
-            trailingButton = TextFieldUiData.TrailingButton.Visible(
-                onClick = {},
-                iconContentDesc = "",
-            ),
+            prefix = null,
+            trailingIconContentDesc = null,
         ),
-        onImeActionDone = {},
     )

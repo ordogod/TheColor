@@ -15,6 +15,18 @@ object DefaultUserPreferences {
     val AppUiColorSchemeSet: UserPreferences.UiColorSchemeSet =
         UserPreferences.UiColorSchemeSet.DayNight
 
-    val ShouldResumeFromLastSearchedColorOnStartup =
-        UserPreferences.ShouldResumeFromLastSearchedColorOnStartup(boolean = false)
+    val DynamicUiColors: UserPreferences.DynamicUiColors =
+        UserPreferences.DynamicUiColors(enabled = true)
+
+    val ResumeFromLastSearchedColorOnStartup =
+        UserPreferences.ResumeFromLastSearchedColorOnStartup(enabled = true)
+
+    val SmartBackspace =
+        UserPreferences.SmartBackspace(enabled = true)
+
+    val SelectAllTextOnTextFieldFocus =
+        UserPreferences.SelectAllTextOnTextFieldFocus(enabled = false)
+
+    val AutoProceedWithRandomizedColors =
+        UserPreferences.AutoProceedWithRandomizedColors(enabled = true)
 }

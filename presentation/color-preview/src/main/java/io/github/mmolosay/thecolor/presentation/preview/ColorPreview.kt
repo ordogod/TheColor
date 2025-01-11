@@ -22,39 +22,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.mmolosay.thecolor.presentation.api.ColorInt
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
-import io.github.mmolosay.thecolor.presentation.preview.ColorPreviewUiState.Hidden
-import io.github.mmolosay.thecolor.presentation.preview.ColorPreviewUiState.Visible
+import io.github.mmolosay.thecolor.presentation.impl.toCompose
 
 @Composable
 fun ColorPreview(
     viewModel: ColorPreviewViewModel,
 ) {
     val data = viewModel.stateFlow.collectAsStateWithLifecycle().value
-    val uiState = ColorPreviewUiState(data)
-    ColorPreview(uiState)
+    ColorPreview(data)
 }
 
 @Composable
 fun ColorPreview(
-    uiState: ColorPreviewUiState,
+    data: ColorPreviewData,
 ) {
-    val updates = remember { mutableStateListOf<VisibleStateUpdate>() }
-    // we want to have last Visible state memoized to show animation of scaling the preview down
-    // once the state becomes Hidden
-    var main by remember { mutableStateOf(uiState) }
+    val updates = remember { mutableStateListOf<UpdateOfDataWithColor>() }
+    // we want to have last data WITH color memoized to show animation of scaling the preview down
+    // once the new data WITHOUT color arrives
+    var main by remember { mutableStateOf(data) }
     val scale by animateFloatAsState(
-        targetValue = if (uiState is Visible) 1f else 0f,
+        targetValue = if (data.hasColor) 1f else 0f,
         label = "preview scale",
         finishedListener = { value ->
-            // we need to keep last Visible state until the preview is completely scaled down
+            // we need to keep last data WITH color until the preview is completely scaled down
             // and gone. Only after it the actual value can be set
             if (value == 0f) {
-                main = Hidden
+                main = data
             }
         },
     )
@@ -66,8 +64,8 @@ fun ColorPreview(
         contentAlignment = Alignment.Center,
     ) {
         main.let {
-            if (it is Visible) {
-                Main(visibleState = it)
+            if (it.hasColor) {
+                Main(dataWithColor = it)
             }
         }
 
@@ -75,23 +73,23 @@ fun ColorPreview(
             // https://medium.com/@android-world/understanding-the-key-function-in-jetpack-compose-34accc92d567
             key(update) {
                 UpdateRipple(
-                    visibleState = update.uiState,
+                    dataWithColor = update.dataWithColor,
                     onAnimationFinished = {
                         updates.remove(update)
-                        main = update.uiState
+                        main = update.dataWithColor
                     },
                 )
             }
         }
 
-        LaunchedEffect(uiState) {
-            val isAnUpdate = (uiState != main || updates.isNotEmpty())
-            if (uiState is Visible && isAnUpdate) {
+        LaunchedEffect(data) {
+            val isAnUpdate = (data != main || updates.isNotEmpty())
+            if (data.hasColor && isAnUpdate) {
                 val id = updates.lastOrNull()?.id?.let { it + 1 } ?: 0
-                val update = VisibleStateUpdate(uiState, id)
+                val update = UpdateOfDataWithColor(data, id)
                 updates.add(update)
             }
-            if (uiState is Hidden) {
+            if (data.hasNoColor) {
                 updates.clear()
             }
         }
@@ -100,12 +98,12 @@ fun ColorPreview(
 
 @Composable
 private fun Main(
-    visibleState: Visible,
+    dataWithColor: ColorPreviewData,
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         shape = CircleShape, // so shadow has the circular shape
-        color = visibleState.color,
+        color = requireNotNull(dataWithColor.color).toCompose(),
         shadowElevation = 4.dp,
         content = {},
     )
@@ -113,18 +111,19 @@ private fun Main(
 
 @Composable
 private fun UpdateRipple(
-    visibleState: Visible,
+    dataWithColor: ColorPreviewData,
     onAnimationFinished: () -> Unit,
 ) {
     val scaleAnim = remember {
         Animatable(initialValue = 0f)
     }
+    val color = requireNotNull(dataWithColor.color).toCompose()
     Box(
         modifier = Modifier
             .fillMaxSize()
             .scale(scaleAnim.value)
             .clip(CircleShape)
-            .background(visibleState.color),
+            .background(color),
     )
     LaunchedEffect(Unit) {
         scaleAnim.animateTo(
@@ -138,8 +137,8 @@ private fun UpdateRipple(
     }
 }
 
-private data class VisibleStateUpdate(
-    val uiState: Visible,
+private data class UpdateOfDataWithColor(
+    val dataWithColor: ColorPreviewData,
     val id: Int,
 )
 
@@ -147,11 +146,13 @@ private data class VisibleStateUpdate(
 @Composable
 private fun Preview() {
     TheColorTheme {
-        ColorPreview(uiState = previewUiState())
+        ColorPreview(
+            data = previewData(),
+        )
     }
 }
 
-private fun previewUiState() =
-    Visible(
-        color = Color(0xFF_13264D),
+private fun previewData() =
+    ColorPreviewData(
+        color = ColorInt(0x13264D),
     )

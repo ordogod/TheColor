@@ -1,10 +1,12 @@
 package io.github.mmolosay.thecolor.presentation.input.impl
 
+import io.github.mmolosay.thecolor.domain.repository.UserPreferencesRepository
 import io.github.mmolosay.thecolor.presentation.input.api.ColorInput
 import io.github.mmolosay.thecolor.presentation.input.api.ColorInputEvent
 import io.github.mmolosay.thecolor.presentation.input.api.ColorInputEventStore
 import io.github.mmolosay.thecolor.presentation.input.api.ColorInputState
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.Text
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldViewModel
 import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHexData
 import io.github.mmolosay.thecolor.presentation.input.impl.hex.ColorInputHexViewModel
 import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
@@ -20,18 +22,19 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus as DomainSelectAllTextOnTextFieldFocus
 
 abstract class ColorInputHexViewModelTest {
 
@@ -42,7 +45,21 @@ abstract class ColorInputHexViewModelTest {
         every { hexColorInputFlow } returns flowOf(ColorInput.Hex(""))
         coEvery { send(color = any(), from = DomainColorInputType.Hex) } just runs
     }
+
     val eventStore: ColorInputEventStore = mockk()
+
+    val userPreferencesRepository: UserPreferencesRepository = mockk {
+        every { flowOfSelectAllTextOnTextFieldFocus() } returns kotlin.run {
+            val value = DomainSelectAllTextOnTextFieldFocus(enabled = false)
+            flowOf(value)
+        }
+    }
+    val textFieldViewModelFactory: TextFieldViewModel.Factory = TextFieldViewModelTestFactory(
+        userPreferencesRepository = userPreferencesRepository,
+        defaultDispatcher = mainDispatcherRule.testDispatcher,
+        uiDataUpdateDispatcher = mainDispatcherRule.testDispatcher,
+    )
+
     val colorInputValidator: ColorInputValidator = mockk {
         every { any<ColorInput>().validate() } returns mockk<ColorInputState.Invalid>()
     }
@@ -51,9 +68,10 @@ abstract class ColorInputHexViewModelTest {
 
     fun createSut() =
         ColorInputHexViewModel(
-            coroutineScope = TestScope(context = mainDispatcherRule.testDispatcher),
+            coroutineScope = CoroutineScope(context = mainDispatcherRule.testDispatcher),
             mediator = mediator,
             eventStore = eventStore,
+            textFieldViewModelFactory = textFieldViewModelFactory,
             colorInputValidator = colorInputValidator,
             defaultDispatcher = mainDispatcherRule.testDispatcher,
             uiDataUpdateDispatcher = mainDispatcherRule.testDispatcher,

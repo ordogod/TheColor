@@ -7,10 +7,9 @@ import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Composable
-import io.github.mmolosay.thecolor.presentation.details.ColorDetailsViewModel.DataState
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel.DataState
 
 @OptIn(ExperimentalAnimationApi::class)
-@Suppress("SpellCheckingInspection")
 @Composable
 fun ColorDetailsCrossfade(
     actualDataState: DataState,

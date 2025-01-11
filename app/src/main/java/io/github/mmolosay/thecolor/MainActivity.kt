@@ -8,17 +8,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.mmolosay.thecolor.presentation.design.Brightness
+import io.github.mmolosay.thecolor.presentation.design.Material3DynamicColorsAvailability.areDynamicColorsAvailable
+import io.github.mmolosay.thecolor.presentation.design.LocalDefaultShouldUseLightTintForNavBarControls
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.animateColors
 import io.github.mmolosay.thecolor.presentation.design.brightness
-import io.github.mmolosay.thecolor.presentation.design.isDefaultNavigationBarLight
+import io.github.mmolosay.thecolor.presentation.design.shouldUseLightTintForNavBarControls
 import io.github.mmolosay.thecolor.presentation.design.systemBrightness
 import io.github.mmolosay.thecolor.presentation.design.toMaterialColorScheme
 import kotlinx.coroutines.cancel
@@ -99,22 +104,39 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     private fun Content() {
+        val context = LocalContext.current
+        val areDynamicColorsEnabled = mainViewModel.dynamicUiColorsFlow
+            .collectAsStateWithLifecycle(initialValue = null).value
+            ?.enabled
+        // (Boolean && Boolean?) -> Boolean with fast route if first condition is false
+        val useDynamicColorSchemes =
+            (areDynamicColorsAvailable() && (areDynamicColorsEnabled ?: return))
         val colorScheme = mainViewModel.appUiColorSchemeResolverFlow
             .collectAsStateWithLifecycle(initialValue = null).value
-            ?.resolve(brightness = systemBrightness())
+            ?.resolve(
+                brightness = systemBrightness(),
+                useDynamicColorSchemes = useDynamicColorSchemes,
+            )
             ?: return
-        val materialColorScheme = colorScheme.toMaterialColorScheme()
-        val animatedMaterialColorScheme = materialColorScheme.animateColors()
 
         LaunchedEffect(colorScheme) {
             enableEdgeToEdge(colorSchemeBrightness = colorScheme.brightness())
         }
 
+        val materialColorScheme = colorScheme.toMaterialColorScheme(context)
+        val animatedMaterialColorScheme = materialColorScheme.animateColors()
+        val useLightTintForNavBarControls = remember(colorScheme) {
+            colorScheme.shouldUseLightTintForNavBarControls()
+        }
+
         TheColorTheme(
             materialColorScheme = animatedMaterialColorScheme,
-            isDefaultNavigationBarLight = colorScheme.isDefaultNavigationBarLight(),
         ) {
-            Application()
+            CompositionLocalProvider(
+                LocalDefaultShouldUseLightTintForNavBarControls provides useLightTintForNavBarControls,
+            ) {
+                Application()
+            }
         }
     }
 }

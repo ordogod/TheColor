@@ -2,17 +2,25 @@ package io.github.mmolosay.thecolor.presentation.settings.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.RestartAlt
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -31,7 +39,13 @@ import io.github.mmolosay.debounce.debounced
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.asSingletonSet
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.isSingleton
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.single
+import io.github.mmolosay.thecolor.presentation.design.Brightness
+import io.github.mmolosay.thecolor.presentation.design.ColorScheme
+import io.github.mmolosay.thecolor.presentation.design.Material3DynamicColorsAvailability.areDynamicColorsAvailable
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
+import io.github.mmolosay.thecolor.presentation.design.systemBrightness
+import io.github.mmolosay.thecolor.presentation.impl.onlyBottom
+import io.github.mmolosay.thecolor.presentation.impl.withoutBottom
 import io.github.mmolosay.thecolor.presentation.settings.SettingsData
 import io.github.mmolosay.thecolor.presentation.settings.SettingsUiStrings
 import io.github.mmolosay.thecolor.presentation.settings.SettingsViewModel
@@ -82,18 +96,37 @@ fun SettingsScreen(
 ) {
     val strings = SettingsUiStrings(LocalContext.current)
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    var showResetPreferencesToDefaultDialog by remember { mutableStateOf(false) }
+    val dismissResetPreferencesToDefaultDialog: () -> Unit = {
+        showResetPreferencesToDefaultDialog = false
+    }
+
+    if (showResetPreferencesToDefaultDialog) {
+        ResetPreferencesToDefaultAlertDialog(
+            onDismissRequest = dismissResetPreferencesToDefaultDialog,
+            strings = strings,
+            onConfirmClick = {
+                data.resetPreferencesToDefault()
+                dismissResetPreferencesToDefaultDialog()
+            },
+        )
+    }
+
     Scaffold(
         topBar = {
             TopBar(
                 strings = strings,
                 scrollBehavior = scrollBehavior,
                 navigateBack = navigateBack,
+                onResetPreferencesToDefaultClick = { showResetPreferencesToDefaultDialog = true },
             )
         },
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.withoutBottom(),
     ) { contentPadding ->
         Settings(
             modifier = Modifier
                 .padding(contentPadding)
+                // consuming 'contentPadding' as window insets isn't needed here
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             data = data,
             strings = strings,
@@ -107,8 +140,8 @@ private fun TopBar(
     strings: SettingsUiStrings,
     scrollBehavior: TopAppBarScrollBehavior,
     navigateBack: () -> Unit,
+    onResetPreferencesToDefaultClick: () -> Unit,
 ) {
-    // TODO: add an action to reset settings to default?
     val debouncedNavigateBack = remember(navigateBack) {
         debounced(
             action = navigateBack,
@@ -126,6 +159,16 @@ private fun TopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                     contentDescription = strings.topBarGoBackIconDesc,
+                )
+            }
+        },
+        actions = {
+            IconButton(
+                onClick = onResetPreferencesToDefaultClick,
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.RestartAlt,
+                    contentDescription = strings.topBarResetPreferencesToDefaultIconDesc,
                 )
             }
         },
@@ -161,21 +204,30 @@ fun Settings(
                 onClick = { showSelectionDialog = true },
             )
             if (showSelectionDialog) {
+                val windowInsets = BottomSheetDefaults.windowInsets
                 ModalBottomSheet(
                     onDismissRequest = { showSelectionDialog = false },
+                    windowInsets = windowInsets.withoutBottom(),
                 ) {
-                    PreferredColorInputTypeSelection(options = options)
+                    val bottomWindowInsets = windowInsets.onlyBottom()
+                    PreferredColorInputTypeSelection(
+                        modifier = Modifier
+                            .padding(bottomWindowInsets.asPaddingValues())
+                            .consumeWindowInsets(bottomWindowInsets),
+                        options = options,
+                    )
                 }
             }
         }
 
         item("app ui color scheme") {
             var showSelectionDialog by remember { mutableStateOf(false) }
-            val options = data.supportedAppUiColorSchemeSets.map { mode ->
+            val options = data.supportedAppUiColorSchemeSets.map { set ->
                 AppUiColorSchemeOption(
-                    name = mode.toVerboseUiString(strings),
-                    isSelected = (data.appUiColorSchemeSet == mode),
-                    onSelect = { data.changeAppUiColorSchemeSet(mode) },
+                    name = set.toVerboseUiString(strings),
+                    isSelected = (data.appUiColorSchemeSet == set),
+                    onSelect = { data.changeAppUiColorSchemeSet(set) },
+                    colorScheme = set.toColorScheme(systemBrightness()),
                 )
             }
             AppUiColorScheme(
@@ -185,11 +237,30 @@ fun Settings(
                 onClick = { showSelectionDialog = true },
             )
             if (showSelectionDialog) {
+                val windowInsets = BottomSheetDefaults.windowInsets
+                val bottomWindowInsets = windowInsets.onlyBottom()
                 ModalBottomSheet(
                     onDismissRequest = { showSelectionDialog = false },
+                    windowInsets = windowInsets.withoutBottom(),
                 ) {
-                    AppUiColorSchemeSelection(options = options)
+                    AppUiColorSchemeSelection(
+                        modifier = Modifier
+                            .padding(bottomWindowInsets.asPaddingValues())
+                            .consumeWindowInsets(bottomWindowInsets),
+                        options = options,
+                    )
                 }
+            }
+        }
+
+        if (areDynamicColorsAvailable()) {
+            item("dynamic ui colors") {
+                DynamicUiColors(
+                    title = strings.itemDynamicUiColorsTitle,
+                    description = strings.itemDynamicUiColorsDesc,
+                    checked = data.isDynamicUiColorsEnabled,
+                    onCheckedChange = data.changeDynamicUiColorsEnablement,
+                )
             }
         }
 
@@ -197,8 +268,45 @@ fun Settings(
             ResumeFromLastSearchedColor(
                 title = strings.itemResumeFromLastSearchedColorTitle,
                 description = strings.itemResumeFromLastSearchedColorDesc,
-                checked = data.shouldResumeFromLastSearchedColorOnStartup,
-                onCheckedChange = data.changeShouldResumeFromLastSearchedColorOnStartup,
+                checked = data.isResumeFromLastSearchedColorOnStartupEnabled,
+                onCheckedChange = data.changeResumeFromLastSearchedColorOnStartupEnablement,
+            )
+        }
+
+        item("smart backspace") {
+            SmartBackspace(
+                title = strings.itemSmartBackspaceTitle,
+                description = strings.itemSmartBackspaceDesc,
+                checked = data.isSmartBackspaceEnabled,
+                onCheckedChange = data.changeSmartBackspaceEnablement,
+            )
+        }
+
+        item("select all text on text field focus") {
+            SelectAllTextOnTextFieldFocus(
+                title = strings.itemSelectAllTextOnTextFieldFocusTitle,
+                description = strings.itemSelectAllTextOnTextFieldFocusDesc,
+                checked = data.isSelectAllTextOnTextFieldFocusEnabled,
+                onCheckedChange = data.changeSelectAllTextOnTextFieldFocusEnablement,
+            )
+        }
+
+        item("auto proceed with randomized colors") {
+            AutoProceedWithRandomizedColors(
+                title = strings.itemAutoProceedWithRandomizedColorsTitle,
+                description = strings.itemAutoProceedWithRandomizedColorsDesc,
+                checked = data.isAutoProceedWithRandomizedColorsEnabled,
+                onCheckedChange = data.changeAutoProceedWithRandomizedColorsEnablement,
+            )
+        }
+
+        item("spacer for navigation bar") {
+            val windowInsets = WindowInsets.systemBars.onlyBottom()
+            // visually the spacer will seem bigger due to spacing Arrangement of LazyColumn()
+            Spacer(
+                modifier = Modifier
+                    .padding(windowInsets.asPaddingValues())
+                    .consumeWindowInsets(windowInsets)
             )
         }
     }
@@ -219,11 +327,33 @@ private fun DomainUiColorSchemeSet.toShortUiString(
         when (this.single()) {
             DomainUiColorScheme.Light -> strings.itemAppUiColorSchemeValueLight
             DomainUiColorScheme.Dark -> strings.itemAppUiColorSchemeValueDark
+            DomainUiColorScheme.Jungle -> strings.itemAppUiColorSchemeValueJungle
+            DomainUiColorScheme.Midnight -> strings.itemAppUiColorSchemeValueMidnight
         }
     } else {
         when (this) {
             DomainUiColorSchemeSet.DayNight -> strings.itemAppUiColorSchemeValueDayNightShort
-            else -> error("Unsupported UI color scheme mode")
+            else -> error("Unsupported UI color scheme set")
+        }
+    }
+
+private fun DomainUiColorSchemeSet.toColorScheme(
+    systemBrightness: Brightness,
+): ColorScheme =
+    if (this.isSingleton()) {
+        when (this.single()) {
+            DomainUiColorScheme.Light -> ColorScheme.Light
+            DomainUiColorScheme.Dark -> ColorScheme.Dark
+            DomainUiColorScheme.Jungle -> ColorScheme.Jungle
+            DomainUiColorScheme.Midnight -> ColorScheme.Midnight
+        }
+    } else {
+        when (this) {
+            DomainUiColorSchemeSet.DayNight -> when (systemBrightness) {
+                Brightness.Light -> ColorScheme.Light
+                Brightness.Dark -> ColorScheme.Dark
+            }
+            else -> error("Unsupported UI color scheme set")
         }
     }
 
@@ -234,11 +364,13 @@ private fun DomainUiColorSchemeSet.toVerboseUiString(
         when (this.single()) {
             DomainUiColorScheme.Light -> strings.itemAppUiColorSchemeValueLight
             DomainUiColorScheme.Dark -> strings.itemAppUiColorSchemeValueDark
+            DomainUiColorScheme.Jungle -> strings.itemAppUiColorSchemeValueJungle
+            DomainUiColorScheme.Midnight -> strings.itemAppUiColorSchemeValueMidnight
         }
     } else {
         when (this) {
             DomainUiColorSchemeSet.DayNight -> strings.itemAppUiColorSchemeValueDayNightVerbose
-            else -> error("Unsupported UI color scheme mode")
+            else -> error("Unsupported UI color scheme set")
         }
     }
 
@@ -255,8 +387,11 @@ private fun Preview() {
 
 private fun previewData() =
     SettingsData(
+        resetPreferencesToDefault = {},
+
         preferredColorInputType = DomainColorInputType.Hex,
         changePreferredColorInputType = {},
+
         appUiColorSchemeSet = DomainUiColorSchemeSet.DayNight,
         supportedAppUiColorSchemeSets = listOf(
             DomainUiColorScheme.Light.asSingletonSet(),
@@ -264,6 +399,19 @@ private fun previewData() =
             DomainUiColorSchemeSet.DayNight,
         ),
         changeAppUiColorSchemeSet = {},
-        shouldResumeFromLastSearchedColorOnStartup = true,
-        changeShouldResumeFromLastSearchedColorOnStartup = {},
+
+        isDynamicUiColorsEnabled = true,
+        changeDynamicUiColorsEnablement = {},
+
+        isResumeFromLastSearchedColorOnStartupEnabled = true,
+        changeResumeFromLastSearchedColorOnStartupEnablement = {},
+
+        isSmartBackspaceEnabled = true,
+        changeSmartBackspaceEnablement = {},
+
+        isSelectAllTextOnTextFieldFocusEnabled = true,
+        changeSelectAllTextOnTextFieldFocusEnablement = {},
+
+        isAutoProceedWithRandomizedColorsEnabled = true,
+        changeAutoProceedWithRandomizedColorsEnablement = {},
     )

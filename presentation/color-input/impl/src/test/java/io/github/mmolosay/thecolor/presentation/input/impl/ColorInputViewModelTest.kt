@@ -7,8 +7,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.TestScope
 import org.junit.Rule
 import org.junit.Test
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
@@ -70,7 +70,7 @@ class ColorInputViewModelTest {
 
     fun createSut() =
         ColorInputViewModel(
-            coroutineScope = TestScope(context = mainDispatcherRule.testDispatcher),
+            coroutineScope = CoroutineScope(context = mainDispatcherRule.testDispatcher),
             eventStore = mockk(),
             mediator = mediator,
             hexViewModelFactory = { _, _, _ -> mockk() },

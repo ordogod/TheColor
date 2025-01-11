@@ -4,7 +4,7 @@ import io.github.mmolosay.thecolor.testing.MainDispatcherRule
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.mockk
-import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.CoroutineScope
 import org.junit.Rule
 import org.junit.Test
 
@@ -47,12 +47,9 @@ class ColorCenterViewModelTest {
 
     fun createSut() =
         ColorCenterViewModel(
-            coroutineScope = TestScope(context = mainDispatcherRule.testDispatcher),
-            colorDetailsCommandProvider = mockk(),
-            colorDetailsEventStore = mockk(),
-            colorSchemeCommandProvider = mockk(),
-            colorDetailsViewModelFactory = { _, _, _ -> mockk() },
-            colorSchemeViewModelFactory = { _, _ -> mockk() },
+            coroutineScope = CoroutineScope(context = mainDispatcherRule.testDispatcher),
+            colorDetailsViewModel = mockk(),
+            colorSchemeViewModel = mockk(),
         ).also {
             sut = it
         }

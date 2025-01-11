@@ -4,6 +4,7 @@
     <string name="home_settings_icon_content_desc">Go to Settings</string>
     <string name="home_headline">Find your color</string>
     <string name="home_proceed_btn">Proceed</string>
+    <string name="home_randomize_color_button_icon_content_desc">Randomize color</string>
 
     <string name="home_invalid_color_message">Please enter a valid color</string>
 

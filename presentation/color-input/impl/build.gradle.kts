@@ -75,6 +75,10 @@ dependencies {
     implementation("com.google.dagger:hilt-android:${libs.versions.hilt.get()}")
     kapt("com.google.dagger:hilt-compiler:${libs.versions.hilt.get()}")
 
+    // Misc (preserve alphabetical order)
+    implementation("com.jakewharton.timber:timber:${libs.versions.jakewhartonTimber.get()}")
+    implementation("com.valentinilk.shimmer:compose-shimmer:${libs.versions.valentinilkShimmer.get()}")
+
     // Testing
     testImplementation(project(":utils:testing"))
     testImplementation("junit:junit:${libs.versions.junit.get()}")

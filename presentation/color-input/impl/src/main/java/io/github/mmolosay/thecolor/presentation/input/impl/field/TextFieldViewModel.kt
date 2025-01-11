@@ -1,12 +1,26 @@
 package io.github.mmolosay.thecolor.presentation.input.impl.field
 
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import io.github.mmolosay.thecolor.domain.repository.UserPreferencesRepository
+import io.github.mmolosay.thecolor.presentation.api.SimpleViewModel
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.Text
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.TrailingButton
 import io.github.mmolosay.thecolor.presentation.input.impl.model.Update
 import io.github.mmolosay.thecolor.presentation.input.impl.model.causedByUser
+import io.github.mmolosay.thecolor.presentation.input.impl.model.map
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import javax.inject.Named
 
 /**
  * Handles presentation logic of a single text field inside a 'Color Input' feature.
@@ -16,23 +30,62 @@ import kotlinx.coroutines.flow.update
  *
  * Instead, it can be created within "simple" `ViewModel` or Google's `ViewModel`.
  */
-class TextFieldViewModel(
-    private val filterUserInput: (String) -> Text,
-) {
+class TextFieldViewModel @AssistedInject constructor(
+    @Assisted coroutineScope: CoroutineScope,
+    @Assisted private val filterUserInput: (String) -> Text,
+    private val userPreferencesRepository: UserPreferencesRepository,
+    @Named("defaultDispatcher") private val defaultDispatcher: CoroutineDispatcher,
+    @Named("uiDataUpdateDispatcher") private val uiDataUpdateDispatcher: CoroutineDispatcher,
+) : SimpleViewModel(coroutineScope) {
 
+    private val dataUpdateMutex = Mutex()
     private val _dataUpdatesFlow = MutableStateFlow<Update<TextFieldData>?>(null)
     val dataUpdatesFlow = _dataUpdatesFlow.asStateFlow()
 
-    fun updateText(update: Update<Text>) {
-        _dataUpdatesFlow.update {
-            val text = update.payload
-            val newData = if (it == null) {
-                makeInitialData(text)
-            } else {
-                val oldData = it.payload
-                oldData.smartCopy(text)
+    init {
+        collectSelectAllTextOnTextFieldFocusPreference()
+    }
+
+    private fun collectSelectAllTextOnTextFieldFocusPreference() {
+        coroutineScope.launch(defaultDispatcher) {
+            userPreferencesRepository.flowOfSelectAllTextOnTextFieldFocus().collect { preference ->
+                _dataUpdatesFlow.update { update ->
+                    if (update == null) return@update null
+                    update.map {
+                        it.copy(shouldSelectAllTextOnFocus = preference.enabled)
+                    }
+                }
             }
-            newData causedByUser update.causedByUser
+        }
+    }
+
+    fun updateText(update: Update<Text>) {
+        coroutineScope.launch(defaultDispatcher) {
+            /*
+             * MutableStateFlow.update() is NOT fair. If we:
+             * 1. call update() that will return X
+             * 2. call update() that will return Y
+             * So may happen that second update() finishes first, and flow will emit [Y, X]
+             * instead of [X, Y], which is expected according to the order of calling update()s.
+             * We need a mutex (which IS fair) to prevent other coroutines from entering update()
+             * and thus potentially messing up the order of emissions.
+             */
+            dataUpdateMutex.withLock {
+                withContext(uiDataUpdateDispatcher) {
+                    _dataUpdatesFlow.update {
+                        val text = update.payload
+                        val newData = if (it == null) {
+                            withContext(defaultDispatcher) {
+                                makeInitialData(text)
+                            }
+                        } else {
+                            val oldData = it.payload
+                            oldData.smartCopy(text)
+                        }
+                        newData causedByUser update.causedByUser
+                    }
+                }
+            }
         }
     }
 
@@ -45,22 +98,32 @@ class TextFieldViewModel(
             trailingButton = trailingButton(text),
         )
 
-    private fun trailingButton(text: Text): TrailingButton =
-        when (showTrailingButton(text)) {
+    private fun trailingButton(text: Text): TrailingButton {
+        val showTrailingButton = text.string.isNotEmpty()
+        return when (showTrailingButton) {
             true -> TrailingButton.Visible(onClick = { onTextChangeFromView(Text("")) })
             false -> TrailingButton.Hidden
         }
+    }
 
-    private fun showTrailingButton(text: Text): Boolean =
-        text.string.isNotEmpty()
-
-    private fun makeInitialData(text: Text) =
+    private suspend fun makeInitialData(text: Text) =
         TextFieldData(
             text = text,
             onTextChange = ::onTextChangeFromView,
             filterUserInput = filterUserInput,
             trailingButton = trailingButton(text),
+            shouldSelectAllTextOnFocus = userPreferencesRepository
+                .flowOfSelectAllTextOnTextFieldFocus()
+                .first().enabled,
         )
+
+    @AssistedFactory
+    interface Factory {
+        fun create(
+            coroutineScope: CoroutineScope,
+            filterUserInput: (String) -> Text,
+        ): TextFieldViewModel
+    }
 }
 
 /**

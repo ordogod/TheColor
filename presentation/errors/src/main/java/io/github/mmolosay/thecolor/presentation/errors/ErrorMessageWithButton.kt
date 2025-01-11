@@ -42,7 +42,7 @@ fun ErrorMessageWithButton(
     )
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun ErrorMessageWithActionPreview() {
     TheColorTheme {

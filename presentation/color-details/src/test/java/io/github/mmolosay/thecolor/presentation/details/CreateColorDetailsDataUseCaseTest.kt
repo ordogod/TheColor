@@ -2,7 +2,10 @@ package io.github.mmolosay.thecolor.presentation.details
 
 import io.github.mmolosay.thecolor.domain.model.Color
 import io.github.mmolosay.thecolor.domain.model.ColorDetails
+import io.github.mmolosay.thecolor.presentation.api.ColorInt
 import io.github.mmolosay.thecolor.presentation.api.ColorToColorIntUseCase
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.CreateColorDetailsDataUseCase
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -56,7 +59,7 @@ class CreateColorDetailsDataUseCaseTest {
             ),
             exactMatch = ColorDetailsData.ExactMatch.No(
                 exactValue = "#126B40",
-                exactColor = io.github.mmolosay.thecolor.presentation.api.ColorInt(0x123456),
+                exactColor = ColorInt(0x123456),
                 goToExactColor = NoopOnClickAction,
                 deviation = "1366",
             ),

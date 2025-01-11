@@ -7,7 +7,11 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.mmolosay.thecolor.domain.model.ColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences
-import io.github.mmolosay.thecolor.domain.model.UserPreferences.ShouldResumeFromLastSearchedColorOnStartup
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.DynamicUiColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorScheme
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorSchemeSet
 import io.github.mmolosay.thecolor.domain.repository.DefaultUserPreferences
@@ -45,9 +49,29 @@ class UserPreferencesDataStoreRepository @Inject constructor(
             .map { it.getAppUiColorSchemeSet() }
             .stateEagerlyInAppScope()
 
-    private val stateFlowOfShouldResumeFromLastSearchedColorOnStartup: StateFlow<ShouldResumeFromLastSearchedColorOnStartup?> =
+    private val stateFlowOfDynamicUiColors: StateFlow<DynamicUiColors?> =
         dataStore.data
-            .map { it.getShouldResumeFromLastSearchedColorOnStartup() }
+            .map { it.getDynamicUiColors() }
+            .stateEagerlyInAppScope()
+
+    private val stateFlowOfResumeFromLastSearchedColorOnStartup: StateFlow<ResumeFromLastSearchedColorOnStartup?> =
+        dataStore.data
+            .map { it.getResumeFromLastSearchedColorOnStartup() }
+            .stateEagerlyInAppScope()
+
+    private val stateFlowOfSmartBackspace: StateFlow<SmartBackspace?> =
+        dataStore.data
+            .map { it.getSmartBackspace() }
+            .stateEagerlyInAppScope()
+
+    private val stateFlowOfSelectAllTextOnTextFieldFocus: StateFlow<SelectAllTextOnTextFieldFocus?> =
+        dataStore.data
+            .map { it.getSelectAllTextOnTextFieldFocus() }
+            .stateEagerlyInAppScope()
+
+    private val stateFlowOfAutoProceedWithRandomizedColors: StateFlow<AutoProceedWithRandomizedColors?> =
+        dataStore.data
+            .map { it.getAutoProceedWithRandomizedColors() }
             .stateEagerlyInAppScope()
 
     override fun flowOfColorInputType(): Flow<ColorInputType> =
@@ -65,11 +89,12 @@ class UserPreferencesDataStoreRepository @Inject constructor(
     override suspend fun setColorInputType(value: ColorInputType?) {
         withContext(ioDispatcher) {
             val dtoValue = with(ColorInputTypeMapper) { value?.toDtoString() }
+            val key = DataStoreKeys.ColorInputType
             dataStore.edit { preferences ->
                 if (dtoValue != null) {
-                    preferences[DataStoreKeys.ColorInputType] = dtoValue
+                    preferences[key] = dtoValue
                 } else {
-                    preferences.remove(DataStoreKeys.ColorInputType)
+                    preferences.remove(key)
                 }
             }
         }
@@ -119,28 +144,134 @@ class UserPreferencesDataStoreRepository @Inject constructor(
         }
     }
 
-    override fun flowOfShouldResumeFromLastSearchedColorOnStartup(): Flow<ShouldResumeFromLastSearchedColorOnStartup> =
-        stateFlowOfShouldResumeFromLastSearchedColorOnStartup.filterNotNull()
+    override fun flowOfDynamicUiColors(): Flow<DynamicUiColors> =
+        stateFlowOfDynamicUiColors.filterNotNull()
 
-    private fun Preferences.getShouldResumeFromLastSearchedColorOnStartup(): ShouldResumeFromLastSearchedColorOnStartup {
-        val dtoValue = this[DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup]
+    private fun Preferences.getDynamicUiColors(): DynamicUiColors {
+        val dtoValue = this[DataStoreKeys.DynamicUiColors]
         return if (dtoValue != null) {
-            ShouldResumeFromLastSearchedColorOnStartup(
-                boolean = dtoValue, // boolean stays boolean in both Data and Domain layers
-            )
+            DynamicUiColors(enabled = dtoValue) // boolean stays boolean in both Data and Domain layers
         } else {
-            DefaultUserPreferences.ShouldResumeFromLastSearchedColorOnStartup
+            DefaultUserPreferences.DynamicUiColors
         }
     }
 
-    override suspend fun setShouldResumeFromLastSearchedColorOnStartup(value: ShouldResumeFromLastSearchedColorOnStartup?) {
+    override suspend fun setDynamicUiColors(value: DynamicUiColors?) {
         withContext(ioDispatcher) {
             dataStore.edit { preferences ->
+                val key = DataStoreKeys.DynamicUiColors
                 if (value != null) {
-                    preferences[DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup] =
-                        value.boolean
+                    preferences[key] = value.enabled
                 } else {
-                    preferences.remove(DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup)
+                    preferences.remove(key)
+                }
+            }
+        }
+    }
+
+    override fun flowOfResumeFromLastSearchedColorOnStartup(): Flow<ResumeFromLastSearchedColorOnStartup> =
+        stateFlowOfResumeFromLastSearchedColorOnStartup.filterNotNull()
+
+    private fun Preferences.getResumeFromLastSearchedColorOnStartup(): ResumeFromLastSearchedColorOnStartup {
+        val dtoValue = this[DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup]
+        return if (dtoValue != null) {
+            ResumeFromLastSearchedColorOnStartup(
+                enabled = dtoValue, // boolean stays boolean in both Data and Domain layers
+            )
+        } else {
+            DefaultUserPreferences.ResumeFromLastSearchedColorOnStartup
+        }
+    }
+
+    override suspend fun setResumeFromLastSearchedColorOnStartup(value: ResumeFromLastSearchedColorOnStartup?) {
+        withContext(ioDispatcher) {
+            dataStore.edit { preferences ->
+                val key = DataStoreKeys.ShouldResumeFromLastSearchedColorOnStartup
+                if (value != null) {
+                    preferences[key] = value.enabled
+                } else {
+                    preferences.remove(key)
+                }
+            }
+        }
+    }
+
+    override fun flowOfSmartBackspace(): Flow<SmartBackspace> =
+        stateFlowOfSmartBackspace.filterNotNull()
+
+    private fun Preferences.getSmartBackspace(): SmartBackspace {
+        val dtoValue = this[DataStoreKeys.SmartBackspace]
+        return if (dtoValue != null) {
+            SmartBackspace(
+                enabled = dtoValue, // boolean stays boolean in both Data and Domain layers
+            )
+        } else {
+            DefaultUserPreferences.SmartBackspace
+        }
+    }
+
+    override suspend fun setSmartBackspace(value: SmartBackspace?) {
+        withContext(ioDispatcher) {
+            dataStore.edit { preferences ->
+                val key = DataStoreKeys.SmartBackspace
+                if (value != null) {
+                    preferences[key] = value.enabled
+                } else {
+                    preferences.remove(key)
+                }
+            }
+        }
+    }
+
+    override fun flowOfSelectAllTextOnTextFieldFocus(): Flow<SelectAllTextOnTextFieldFocus> =
+        stateFlowOfSelectAllTextOnTextFieldFocus.filterNotNull()
+
+    private fun Preferences.getSelectAllTextOnTextFieldFocus(): SelectAllTextOnTextFieldFocus {
+        val dtoValue = this[DataStoreKeys.SelectAllTextOnTextFieldFocus]
+        return if (dtoValue != null) {
+            SelectAllTextOnTextFieldFocus(
+                enabled = dtoValue, // boolean stays boolean in both Data and Domain layers
+            )
+        } else {
+            DefaultUserPreferences.SelectAllTextOnTextFieldFocus
+        }
+    }
+
+    override suspend fun setSelectAllTextOnTextFieldFocus(value: SelectAllTextOnTextFieldFocus?) {
+        withContext(ioDispatcher) {
+            val key = DataStoreKeys.SelectAllTextOnTextFieldFocus
+            dataStore.edit { preferences ->
+                if (value != null) {
+                    preferences[key] = value.enabled
+                } else {
+                    preferences.remove(key)
+                }
+            }
+        }
+    }
+
+    override fun flowOfAutoProceedWithRandomizedColors(): Flow<AutoProceedWithRandomizedColors> =
+        stateFlowOfAutoProceedWithRandomizedColors.filterNotNull()
+
+    private fun Preferences.getAutoProceedWithRandomizedColors(): AutoProceedWithRandomizedColors {
+        val dtoValue = this[DataStoreKeys.AutoProceedWithRandomizedColors]
+        return if (dtoValue != null) {
+            AutoProceedWithRandomizedColors(
+                enabled = dtoValue, // boolean stays boolean in both Data and Domain layers
+            )
+        } else {
+            DefaultUserPreferences.AutoProceedWithRandomizedColors
+        }
+    }
+
+    override suspend fun setAutoProceedWithRandomizedColors(value: AutoProceedWithRandomizedColors?) {
+        withContext(ioDispatcher) {
+            dataStore.edit { preferences ->
+                val key = DataStoreKeys.AutoProceedWithRandomizedColors
+                if (value != null) {
+                    preferences[key] = value.enabled
+                } else {
+                    preferences.remove(key)
                 }
             }
         }
@@ -164,8 +295,18 @@ class UserPreferencesDataStoreRepository @Inject constructor(
         /** Key for a `dark` [UserPreferences.UiColorScheme] from the [UserPreferences.UiColorSchemeSet]. */
         val AppUiColorSchemeDark = stringPreferencesKey("app_ui_color_scheme_set_dark_value")
 
+        val DynamicUiColors = booleanPreferencesKey("dynamic_ui_colors")
+
         val ShouldResumeFromLastSearchedColorOnStartup =
             booleanPreferencesKey("should_resume_from_last_searched_color_on_startup")
+
+        val SmartBackspace = booleanPreferencesKey("smart_backspace")
+
+        val SelectAllTextOnTextFieldFocus =
+            booleanPreferencesKey("select_all_text_on_text_field_focus")
+
+        val AutoProceedWithRandomizedColors =
+            booleanPreferencesKey("auto_proceed_with_randomized_colors")
     }
 }
 
@@ -204,6 +345,8 @@ private object UiColorSchemeMapper {
     private val valueToDtoStringMap = mapOf(
         UiColorScheme.Light to "light",
         UiColorScheme.Dark to "dark",
+        UiColorScheme.Jungle to "jungle",
+        UiColorScheme.Midnight to "midnight",
     )
 
     init {

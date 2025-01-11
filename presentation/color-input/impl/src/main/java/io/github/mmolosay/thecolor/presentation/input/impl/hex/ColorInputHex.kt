@@ -1,30 +1,32 @@
 package io.github.mmolosay.thecolor.presentation.input.impl.hex
 
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
-import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.Loading
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.DataStateCrossfade
+import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.ProcessColorSubmissionResultAsSideEffect
 import io.github.mmolosay.thecolor.presentation.input.impl.UiComponents.TextField
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData
 import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.Text
-import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiData
-import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiData.TrailingButton
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldData.TrailingButton
+import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldUiStrings
 import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
-import io.github.mmolosay.thecolor.presentation.input.impl.model.hideSoftwareKeyboardCommandOrNull
 
 @Composable
 fun ColorInputHex(
@@ -32,46 +34,58 @@ fun ColorInputHex(
 ) {
     val context = LocalContext.current
     val strings = remember(context) { ColorInputHexUiStrings(context) }
-    val state = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
-    val colorSubmissionResult = viewModel.colorSubmissionResultFlow.collectAsStateWithLifecycle().value
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val dataState = viewModel.dataStateFlow.collectAsStateWithLifecycle().value
+    val colorSubmissionResult =
+        viewModel.colorSubmissionResultFlow.collectAsStateWithLifecycle().value
 
-    when (state) {
-        is DataState.BeingInitialized ->
-            Loading()
-        is DataState.Ready -> {
-            val uiData = ColorInputHexUiData(state.data, strings)
-            ColorInputHex(
-                uiData = uiData,
-            )
+    DataStateCrossfade(
+        actualDataState = dataState,
+    ) { state ->
+        when (state) {
+            is DataState.BeingInitialized ->
+                ColorInputHexLoading()
+            is DataState.Ready -> {
+                ColorInputHex(
+                    data = state.data,
+                    strings = strings,
+                )
+            }
         }
     }
 
-    val hideSoftwareKeyboardCommand = hideSoftwareKeyboardCommandOrNull(colorSubmissionResult)
-    LaunchedEffect(hideSoftwareKeyboardCommand) {
-        val command = hideSoftwareKeyboardCommand ?: return@LaunchedEffect
-        keyboardController?.hide()
-        command.onExecuted()
-    }
+    ProcessColorSubmissionResultAsSideEffect(
+        result = colorSubmissionResult,
+    )
 }
 
 @Composable
 fun ColorInputHex(
-    uiData: ColorInputHexUiData,
+    data: ColorInputHexData,
+    strings: ColorInputHexUiStrings,
 ) {
-    var value by remember { mutableStateOf(TextFieldValue(text = uiData.textField.text.string)) }
+    var value by remember {
+        val text = data.textField.text.string
+        val value = TextFieldValue(
+            text = text,
+            selection = TextRange(index = text.length), // cursor at the end of the text
+        )
+        mutableStateOf(value)
+    }
 
     TextField(
-        modifier = Modifier.fillMaxWidth(0.5f),
-        uiData = uiData.textField,
+        modifier = Modifier
+            .defaultMinSize(minWidth = 180.dp)
+            .fillMaxWidth(0.5f),
+        data = data.textField,
+        strings = strings.textField,
         value = value,
-        updateValue = { new -> value = new },
+        onValueChange = { new -> value = new },
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Done,
             capitalization = KeyboardCapitalization.Characters,
         ),
         keyboardActions = KeyboardActions(
-            onDone = { uiData.onImeActionDone() },
+            onDone = { data.submitColor() },
         ),
     )
 }
@@ -81,21 +95,32 @@ fun ColorInputHex(
 private fun Preview() {
     TheColorTheme {
         ColorInputHex(
-            uiData = previewUiData(),
+            data = previewData(),
+            strings = previewUiStrings(),
         )
     }
 }
 
-private fun previewUiData() =
-    ColorInputHexUiData(
-        textField = TextFieldUiData(
+private fun previewData() =
+    ColorInputHexData(
+        textField = TextFieldData(
             text = Text(""),
             onTextChange = {},
             filterUserInput = { Text(it) },
+            trailingButton = TrailingButton.Visible(
+                onClick = {},
+            ),
+            shouldSelectAllTextOnFocus = false,
+        ),
+        submitColor = {},
+    )
+
+private fun previewUiStrings() =
+    ColorInputHexUiStrings(
+        textField = TextFieldUiStrings(
             label = "HEX",
             placeholder = "000000",
             prefix = "#",
-            trailingButton = TrailingButton.Visible(onClick = {}, iconContentDesc = ""),
+            trailingIconContentDesc = "Clear text",
         ),
-        onImeActionDone = {},
     )

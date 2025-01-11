@@ -24,6 +24,7 @@ import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Des
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.TextValue
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Title
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemContentPadding
+import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemValueSpacing
 
 @Composable
 internal fun PreferredColorInputType(
@@ -41,13 +42,14 @@ internal fun PreferredColorInputType(
                 .padding(DefaultItemContentPadding)
                 .fillMaxWidth(),
         ) {
-            Column {
+            Column(
+                modifier = Modifier.weight(1f),
+            ) {
                 Title(text = title)
                 Description(text = description)
             }
 
-            Spacer(modifier = Modifier.width(32.dp)) // min
-            Spacer(modifier = Modifier.weight(1f)) // max
+            Spacer(modifier = Modifier.width(DefaultItemValueSpacing))
             Box(
                 modifier = Modifier.align(Alignment.CenterVertically),
             ) {
@@ -66,9 +68,10 @@ internal fun PreferredColorInputType(
 @Composable
 internal fun PreferredColorInputTypeSelection(
     options: List<ColorInputTypeOption>,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = Modifier.selectableGroup(),
+        modifier = modifier.selectableGroup(),
     ) {
         options.forEach { option ->
             Option(option)

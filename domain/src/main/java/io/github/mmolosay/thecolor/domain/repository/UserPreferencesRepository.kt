@@ -1,7 +1,11 @@
 package io.github.mmolosay.thecolor.domain.repository
 
 import io.github.mmolosay.thecolor.domain.model.ColorInputType
-import io.github.mmolosay.thecolor.domain.model.UserPreferences.ShouldResumeFromLastSearchedColorOnStartup
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.DynamicUiColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorSchemeSet
 import kotlinx.coroutines.flow.Flow
 
@@ -12,6 +16,18 @@ interface UserPreferencesRepository {
     fun flowOfAppUiColorSchemeSet(): Flow<UiColorSchemeSet>
     suspend fun setAppUiColorSchemeSet(value: UiColorSchemeSet?)
 
-    fun flowOfShouldResumeFromLastSearchedColorOnStartup(): Flow<ShouldResumeFromLastSearchedColorOnStartup>
-    suspend fun setShouldResumeFromLastSearchedColorOnStartup(value: ShouldResumeFromLastSearchedColorOnStartup?)
+    fun flowOfDynamicUiColors(): Flow<DynamicUiColors>
+    suspend fun setDynamicUiColors(value: DynamicUiColors?)
+
+    fun flowOfResumeFromLastSearchedColorOnStartup(): Flow<ResumeFromLastSearchedColorOnStartup>
+    suspend fun setResumeFromLastSearchedColorOnStartup(value: ResumeFromLastSearchedColorOnStartup?)
+
+    fun flowOfSmartBackspace(): Flow<SmartBackspace>
+    suspend fun setSmartBackspace(value: SmartBackspace?)
+
+    fun flowOfSelectAllTextOnTextFieldFocus(): Flow<SelectAllTextOnTextFieldFocus>
+    suspend fun setSelectAllTextOnTextFieldFocus(value: SelectAllTextOnTextFieldFocus?)
+
+    fun flowOfAutoProceedWithRandomizedColors(): Flow<AutoProceedWithRandomizedColors>
+    suspend fun setAutoProceedWithRandomizedColors(value: AutoProceedWithRandomizedColors?)
 }

@@ -13,6 +13,10 @@ import androidx.compose.ui.unit.dp
 /**
  * Reusable UI elements for a error View of varying appearance.
  */
+/*
+ * Notice how this object is not 'internal' as other similar objects across the app.
+ * This is done to allow features that want to display custom-looking errors to reuse default elements.
+ */
 object ErrorUiComponents {
 
     @Composable
