@@ -39,8 +39,11 @@ import io.github.mmolosay.debounce.debounced
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.asSingletonSet
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.isSingleton
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.single
+import io.github.mmolosay.thecolor.presentation.design.Brightness
+import io.github.mmolosay.thecolor.presentation.design.ColorScheme
 import io.github.mmolosay.thecolor.presentation.design.Material3DynamicColorsAvailability.areDynamicColorsAvailable
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
+import io.github.mmolosay.thecolor.presentation.design.systemBrightness
 import io.github.mmolosay.thecolor.presentation.impl.onlyBottom
 import io.github.mmolosay.thecolor.presentation.impl.withoutBottom
 import io.github.mmolosay.thecolor.presentation.settings.SettingsData
@@ -219,11 +222,12 @@ fun Settings(
 
         item("app ui color scheme") {
             var showSelectionDialog by remember { mutableStateOf(false) }
-            val options = data.supportedAppUiColorSchemeSets.map { mode ->
+            val options = data.supportedAppUiColorSchemeSets.map { set ->
                 AppUiColorSchemeOption(
-                    name = mode.toVerboseUiString(strings),
-                    isSelected = (data.appUiColorSchemeSet == mode),
-                    onSelect = { data.changeAppUiColorSchemeSet(mode) },
+                    name = set.toVerboseUiString(strings),
+                    isSelected = (data.appUiColorSchemeSet == set),
+                    onSelect = { data.changeAppUiColorSchemeSet(set) },
+                    colorScheme = set.toColorScheme(systemBrightness()),
                 )
             }
             AppUiColorScheme(
@@ -329,6 +333,26 @@ private fun DomainUiColorSchemeSet.toShortUiString(
     } else {
         when (this) {
             DomainUiColorSchemeSet.DayNight -> strings.itemAppUiColorSchemeValueDayNightShort
+            else -> error("Unsupported UI color scheme set")
+        }
+    }
+
+private fun DomainUiColorSchemeSet.toColorScheme(
+    systemBrightness: Brightness,
+): ColorScheme =
+    if (this.isSingleton()) {
+        when (this.single()) {
+            DomainUiColorScheme.Light -> ColorScheme.Light
+            DomainUiColorScheme.Dark -> ColorScheme.Dark
+            DomainUiColorScheme.Jungle -> ColorScheme.Jungle
+            DomainUiColorScheme.Midnight -> ColorScheme.Midnight
+        }
+    } else {
+        when (this) {
+            DomainUiColorSchemeSet.DayNight -> when (systemBrightness) {
+                Brightness.Light -> ColorScheme.Light
+                Brightness.Dark -> ColorScheme.Dark
+            }
             else -> error("Unsupported UI color scheme set")
         }
     }
