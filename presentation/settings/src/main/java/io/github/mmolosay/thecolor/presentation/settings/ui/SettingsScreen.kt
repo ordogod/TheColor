@@ -263,7 +263,7 @@ fun Settings(
                     contentWindowInsets = { windowInsets.withoutBottom() },
                 ) {
                     val bottomWindowInsets = windowInsets.onlyBottom()
-                    AppUiColorSchemeSelection(
+                    NewAppUiColorSchemeSelection(
                         modifier = Modifier
                             .padding(bottomWindowInsets.asPaddingValues())
                             .consumeWindowInsets(bottomWindowInsets),
