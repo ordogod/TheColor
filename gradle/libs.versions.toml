@@ -9,9 +9,9 @@ minSdk = "24"
 buildTools = "34.0.0"
 
 # Kotlin
-kotlin = "1.9.10"
+kotlin = "2.0.21"
 java = "18"
-ksp = "1.9.10-1.0.13"
+ksp = "2.0.21-1.0.27"
 coroutines = "1.7.2"
 
 # AndroidX
@@ -21,7 +21,8 @@ androidx-lifecycle = "2.7.0"
 
 # Compose
 compose-bom = "2024.02.02" # https://developer.android.com/jetpack/compose/bom/bom-mapping
-compose-compiler = "1.5.3" # https://developer.android.com/jetpack/androidx/releases/compose-kotlin
+# version of Compose compiler is determined by plugin "org.jetbrains.kotlin.plugin.compose" and is using Kotlin version
+# see: https://developer.android.com/develop/ui/compose/compiler
 
 # Dagger & Hilt
 hilt = "2.50"

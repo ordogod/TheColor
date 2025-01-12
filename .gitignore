@@ -4,6 +4,7 @@
 
 # Log file
 *.log
+.kotlin/
 
 # BlueJ files
 *.ctxt
