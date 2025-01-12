@@ -20,7 +20,7 @@ androidx-appcompat = "1.6.1"
 androidx-lifecycle = "2.7.0"
 
 # Compose
-compose-bom = "2024.02.02" # https://developer.android.com/jetpack/compose/bom/bom-mapping
+compose-bom = "2024.11.00" # https://developer.android.com/jetpack/compose/bom/bom-mapping
 # version of Compose compiler is determined by plugin "org.jetbrains.kotlin.plugin.compose" and is using Kotlin version
 # see: https://developer.android.com/develop/ui/compose/compiler
 

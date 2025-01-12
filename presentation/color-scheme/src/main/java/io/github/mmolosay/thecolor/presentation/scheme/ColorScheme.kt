@@ -32,7 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -353,7 +353,7 @@ private fun SelectableChip(
         selectedBorderWidth = 0.dp,
     )
     CompositionLocalProvider(
-        LocalMinimumInteractiveComponentEnforcement provides false,
+        LocalMinimumInteractiveComponentSize provides Dp.Unspecified,
     ) {
         FilterChip(
             selected = selected,
@@ -406,7 +406,7 @@ private fun ApplyChangesButton(
         val colors = ButtonDefaults.outlinedButtonColors(
             contentColor = colorsOnTintedSurface.accent,
         )
-        val border = ButtonDefaults.outlinedButtonBorder.copy(
+        val border = ButtonDefaults.outlinedButtonBorder().copy(
             brush = SolidColor(colorsOnTintedSurface.muted),
         )
         OutlinedButton(
@@ -444,7 +444,7 @@ private fun Error(
             val colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = colorsOnTintedSurface.accent,
             )
-            val border = ButtonDefaults.outlinedButtonBorder.copy(
+            val border = ButtonDefaults.outlinedButtonBorder().copy(
                 brush = SolidColor(colorsOnTintedSurface.accent),
             )
             OutlinedButton(

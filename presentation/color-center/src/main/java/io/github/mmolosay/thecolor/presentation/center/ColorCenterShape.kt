@@ -36,11 +36,11 @@ object ColorCenterShape : Shape {
             val height = size.width * 0.15f
             val controlPointX = size.width * 0.20f
             moveTo(x = 0f, y = height)
-            quadraticBezierTo(
+            quadraticTo(
                 x1 = 0 + controlPointX, y1 = 0f,
                 x2 = size.width / 2, y2 = 0f,
             )
-            quadraticBezierTo(
+            quadraticTo(
                 x1 = size.width - controlPointX, y1 = 0f,
                 x2 = size.width, y2 = height,
             )
