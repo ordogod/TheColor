@@ -298,11 +298,9 @@ private fun ProceedButton(
     text: String,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val wrappedOnClick: () -> Unit = remember(onClick) {
-        {
-            onClick()
-            keyboardController?.hide()
-        }
+    val wrappedOnClick: () -> Unit = {
+        onClick()
+        keyboardController?.hide()
     }
     val colors = ButtonDefaults.buttonColors()
     val colorsAnimationProgress by animateFloatAsState(
@@ -344,11 +342,9 @@ private fun RandomizeColorButton(
         val rotationMult = if (clockwise) +1 else -1 // see 'rotate()' Modifier
         rotationDest += (90 * rotationMult)
     }
-    val wrappedOnClick: () -> Unit = remember(onClick) {
-        {
-            onClick()
-            rotate()
-        }
+    val wrappedOnClick: () -> Unit = {
+        onClick()
+        rotate()
     }
     FilledTonalIconButton(
         onClick = wrappedOnClick,
