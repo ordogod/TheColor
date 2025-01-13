@@ -11,7 +11,7 @@ minSdk = "24"
 kotlin = "2.0.21"
 java = "18"
 ksp = "2.0.21-1.0.27"
-coroutines = "1.7.2"
+coroutines = "1.9.0"
 
 # AndroidX
 androidx-core-coreKtx = "1.12.0"
