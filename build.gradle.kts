@@ -5,14 +5,16 @@ plugins {
     id("com.google.dagger.hilt.android") version libs.versions.hilt.get() apply false
     id("org.jetbrains.kotlin.jvm") version libs.versions.kotlin.get() apply false
     id("org.jetbrains.kotlin.android") version libs.versions.kotlin.get() apply false
+    id("org.jetbrains.kotlin.plugin.compose") version libs.versions.kotlin.get() apply false
 }
 
 buildscript {
     repositories {
         gradlePluginPortal()
+        mavenCentral()
     }
 }
 
 tasks.register<Delete>("clean").configure {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }

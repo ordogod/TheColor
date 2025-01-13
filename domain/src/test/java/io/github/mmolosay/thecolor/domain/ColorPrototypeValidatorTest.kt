@@ -4,20 +4,19 @@ import io.github.mmolosay.thecolor.domain.model.ColorPrototype
 import io.github.mmolosay.thecolor.domain.usecase.ColorPrototypeValidator
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
-@RunWith(Parameterized::class)
-class ColorPrototypeValidatorTest(
-    val prototype: ColorPrototype,
-    val expectedValid: Boolean,
-) {
+class ColorPrototypeValidatorTest {
 
     val sut = ColorPrototypeValidator()
 
-    @Test
-    fun `color prototype should be valid or not valid as expected`() {
+    @ParameterizedTest
+    @MethodSource("data")
+    fun `color prototype should be valid or not valid as expected`(
+        prototype: ColorPrototype,
+        expectedValid: Boolean,
+    ) {
         val result = with(sut) { prototype.isValid() }
 
         withClue("Prototype $prototype should be valid=$expectedValid") {
@@ -28,7 +27,6 @@ class ColorPrototypeValidatorTest(
     companion object {
 
         @JvmStatic
-        @Parameterized.Parameters
         fun data() = listOf(
             /* #0  */ ColorPrototype.Hex(null) shouldBeValid false,
             /* #1  */ ColorPrototype.Hex(-0x1) shouldBeValid false,

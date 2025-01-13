@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("kotlin-android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -25,10 +26,6 @@ android {
             val version = libs.versions.java.get().toInt()
             languageVersion.set(JavaLanguageVersion.of(version))
         }
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 }
 

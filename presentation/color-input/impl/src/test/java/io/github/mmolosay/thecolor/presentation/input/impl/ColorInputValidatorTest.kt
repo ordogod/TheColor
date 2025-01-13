@@ -8,16 +8,10 @@ import io.github.mmolosay.thecolor.presentation.input.api.ColorInputState
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
-@RunWith(Parameterized::class)
-class ColorInputValidatorTest(
-    val givenColorInput: ColorInput,
-    val expectedColorInputState: ColorInputState,
-    val mockValues: MockValues?,
-) {
+class ColorInputValidatorTest {
 
     val colorInputMapper: ColorInputMapper = mockk()
     val colorFactory: ColorFactory = mockk()
@@ -27,15 +21,20 @@ class ColorInputValidatorTest(
         colorFactory = colorFactory,
     )
 
-    @Test
-    fun `validating given 'ColorInput' produces expected 'ColorInputState'`() {
-        if (mockValues != null) {
+    @ParameterizedTest
+    @MethodSource("data")
+    fun `validating given 'ColorInput' produces expected 'ColorInputState'`(
+        givenColorInput: ColorInput,
+        expectedColorInputState: ColorInputState,
+        sutDependencies: SutDependencies?,
+    ) {
+        if (sutDependencies != null) {
             every {
                 with(colorInputMapper) { givenColorInput.toPrototype() }
-            } returns mockValues.prototypeFromColorInputMapper
+            } returns sutDependencies.prototypeFromColorInputMapper
             every {
-                colorFactory.from(prototype = mockValues.prototypeFromColorInputMapper)
-            } returns mockValues.parsedColorFromColorFactory
+                colorFactory.from(prototype = sutDependencies.prototypeFromColorInputMapper)
+            } returns sutDependencies.parsedColorFromColorFactory
         }
 
         val resultState = with(sut) { givenColorInput.validate() }
@@ -43,7 +42,7 @@ class ColorInputValidatorTest(
         resultState shouldBe expectedColorInputState
     }
 
-    data class MockValues(
+    data class SutDependencies(
         val prototypeFromColorInputMapper: ColorPrototype,
         val parsedColorFromColorFactory: Color?,
     )
@@ -51,7 +50,6 @@ class ColorInputValidatorTest(
     companion object {
 
         @JvmStatic
-        @Parameterized.Parameters
         fun data() = listOf(
             /* #0 */
             TestCase(
@@ -84,7 +82,7 @@ class ColorInputValidatorTest(
                 TestCase(
                     givenColorInput = ColorInput.Hex("012"),
                     expectedColorInputState = ColorInputState.Valid(color = parsedColorFromColorFactory),
-                    mockValues = MockValues(
+                    sutDependencies = SutDependencies(
                         prototypeFromColorInputMapper,
                         parsedColorFromColorFactory,
                     ),
@@ -100,7 +98,7 @@ class ColorInputValidatorTest(
                         isEmpty = false,
                         isCompleteFromUserPerspective = true,
                     ),
-                    mockValues = MockValues(
+                    sutDependencies = SutDependencies(
                         prototypeFromColorInputMapper,
                         parsedColorFromColorFactory,
                     ),
@@ -113,7 +111,7 @@ class ColorInputValidatorTest(
                 TestCase(
                     givenColorInput = ColorInput.Hex("012345"),
                     expectedColorInputState = ColorInputState.Valid(color = parsedColorFromColorFactory),
-                    mockValues = MockValues(
+                    sutDependencies = SutDependencies(
                         prototypeFromColorInputMapper,
                         parsedColorFromColorFactory,
                     ),
@@ -124,10 +122,10 @@ class ColorInputValidatorTest(
         data class TestCase(
             val givenColorInput: ColorInput,
             val expectedColorInputState: ColorInputState,
-            val mockValues: MockValues? = null,
+            val sutDependencies: SutDependencies? = null,
         )
 
         fun TestCase.asArrayOfAnys(): Array<Any?> =
-            arrayOf(givenColorInput, expectedColorInputState, mockValues)
+            arrayOf(givenColorInput, expectedColorInputState, sutDependencies)
     }
 }

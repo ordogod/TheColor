@@ -4,7 +4,7 @@ import io.github.mmolosay.thecolor.presentation.api.nav.bar.navBarAppearance
 import io.github.mmolosay.thecolor.presentation.api.nav.bar.NavBarAppearanceController
 import io.github.mmolosay.thecolor.presentation.api.nav.bar.RootNavBarAppearanceController
 import io.kotest.matchers.shouldBe
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import kotlin.time.measureTime
 
 class NavBarAppearanceControllerTest {

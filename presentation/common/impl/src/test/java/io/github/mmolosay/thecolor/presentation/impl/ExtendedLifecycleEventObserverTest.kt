@@ -15,19 +15,14 @@ import io.github.mmolosay.thecolor.presentation.impl.ExtendedLifecycleEventObser
 import io.mockk.clearMocks
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 
 /**
  * Tests [ExtendedLifecycleEventObserverAdapter] returned by
  * [ExtendedLifecycleEventObserver.toLifecycleEventObserver] function.
  */
-@RunWith(Parameterized::class)
-class ExtendedLifecycleEventObserverTest(
-    val streamOfEvents: List<Lifecycle.Event>,
-    val expectedDirectionChange: LifecycleDirectionChangeEvent?,
-) {
+class ExtendedLifecycleEventObserverTest {
 
     val lifecycleOwner: LifecycleOwner = mockk()
     val extendedObserver: ExtendedLifecycleEventObserver = mockk(relaxed = true)
@@ -36,8 +31,12 @@ class ExtendedLifecycleEventObserverTest(
     fun LifecycleEventObserver.onStateChanged(event: Lifecycle.Event) =
         this.onStateChanged(source = lifecycleOwner, event = event)
 
-    @Test
-    fun `invoking observer with given events produces expected lifecycle direction change value`() {
+    @ParameterizedTest
+    @MethodSource("testCases")
+    fun `invoking observer with given events produces expected lifecycle direction change value`(
+        streamOfEvents: List<Lifecycle.Event>,
+        expectedDirectionChange: LifecycleDirectionChangeEvent?,
+    ) {
         val streamOfEventsWithoutTheLastOne = streamOfEvents.dropLast(1)
         streamOfEventsWithoutTheLastOne.forEach { event ->
             sut.onStateChanged(event)
@@ -65,7 +64,6 @@ class ExtendedLifecycleEventObserverTest(
     companion object {
 
         @JvmStatic
-        @Parameterized.Parameters
         fun testCases() = listOf(
             /* #0 */ listOf(ON_CREATE) resultsIn EnteringForeground,
             /* #1 */ listOf(ON_PAUSE) resultsIn LeavingForeground,
