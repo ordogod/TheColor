@@ -1,6 +1,7 @@
 package io.github.mmolosay.thecolor.presentation.settings.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -94,79 +95,85 @@ internal fun NewAppUiColorSchemeSelection(
         )
 
         Spacer(Modifier.height(16.dp))
-        val listState = rememberLazyListState()
-        val info = listState.layoutInfo
-        val horizontalContentPadding = run {
-            val size = info.viewportSize
-            if (size == IntSize.Zero) return@run null
-            val firstVisibleItemInfo = info.visibleItemsInfo.firstOrNull() ?: return@run null
-            val firstItemWidth = firstVisibleItemInfo.size
-            if (firstItemWidth == 0) return@run null
-            val horizontalContentPaddingPx = (size.width / 2) - (firstItemWidth / 2)
-            with(LocalDensity.current) { horizontalContentPaddingPx.toDp() }
-        }
-        val coroutineScope = rememberCoroutineScope()
-        val flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center)
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            state = listState,
-            contentPadding = PaddingValues(horizontal = horizontalContentPadding ?: 0.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            flingBehavior = flingBehavior,
+        Box(
+            contentAlignment = Alignment.Center,
         ) {
-            val onItemClick: (index: Int) -> Unit = { index ->
-                coroutineScope.launch {
-                    listState.animateScrollToItem(index)
+            SelectedItemIndicator()
+
+            val listState = rememberLazyListState()
+            val info = listState.layoutInfo
+            val horizontalContentPadding = run {
+                val size = info.viewportSize
+                if (size == IntSize.Zero) return@run null
+                val firstVisibleItemInfo = info.visibleItemsInfo.firstOrNull() ?: return@run null
+                val firstItemWidth = firstVisibleItemInfo.size
+                if (firstItemWidth == 0) return@run null
+                val horizontalContentPaddingPx = (size.width / 2) - (firstItemWidth / 2)
+                with(LocalDensity.current) { horizontalContentPaddingPx.toDp() }
+            }
+            val coroutineScope = rememberCoroutineScope()
+            val flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center)
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                state = listState,
+                contentPadding = PaddingValues(horizontal = horizontalContentPadding ?: 0.dp),
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                flingBehavior = flingBehavior,
+            ) {
+                val onItemClick: (index: Int) -> Unit = { index ->
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(index)
+                    }
                 }
-            }
-            item {
-                val index = 0
-                TestItem(
-                    onClick = { onItemClick(index) },
-                    ordinal = index + 1,
-                )
-            }
-            item {
-                val index = 1
-                TestItem(
-                    onClick = { onItemClick(index) },
-                    ordinal = index + 1,
-                )
-            }
-            item {
-                val index = 2
-                TestItem(
-                    onClick = { onItemClick(index) },
-                    ordinal = index + 1,
-                )
-            }
-            item {
-                val index = 3
-                TestItem(
-                    onClick = { onItemClick(index) },
-                    ordinal = index + 1,
-                )
-            }
-            item {
-                val index = 4
-                TestItem(
-                    onClick = { onItemClick(index) },
-                    ordinal = index + 1,
-                )
-            }
-            item {
-                val index = 5
-                TestItem(
-                    onClick = { onItemClick(index) },
-                    ordinal = index + 1,
-                )
-            }
-            item {
-                val index = 6
-                TestItem(
-                    onClick = { onItemClick(index) },
-                    ordinal = index + 1,
-                )
+                item {
+                    val index = 0
+                    TestItem(
+                        onClick = { onItemClick(index) },
+                        ordinal = index + 1,
+                    )
+                }
+                item {
+                    val index = 1
+                    TestItem(
+                        onClick = { onItemClick(index) },
+                        ordinal = index + 1,
+                    )
+                }
+                item {
+                    val index = 2
+                    TestItem(
+                        onClick = { onItemClick(index) },
+                        ordinal = index + 1,
+                    )
+                }
+                item {
+                    val index = 3
+                    TestItem(
+                        onClick = { onItemClick(index) },
+                        ordinal = index + 1,
+                    )
+                }
+                item {
+                    val index = 4
+                    TestItem(
+                        onClick = { onItemClick(index) },
+                        ordinal = index + 1,
+                    )
+                }
+                item {
+                    val index = 5
+                    TestItem(
+                        onClick = { onItemClick(index) },
+                        ordinal = index + 1,
+                    )
+                }
+                item {
+                    val index = 6
+                    TestItem(
+                        onClick = { onItemClick(index) },
+                        ordinal = index + 1,
+                    )
+                }
             }
         }
 
@@ -185,8 +192,8 @@ private fun TestItem(
             .width(80.dp)
             .height(120.dp),
         onClick = onClick,
-        shape = RoundedCornerShape(percent = 10),
-        border = BorderStroke(width = 3.dp, color = MaterialTheme.colorScheme.primary),
+        shape = RoundedCornerShape(size = 8.dp),
+        border = BorderStroke(width = 0.5.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)),
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -194,6 +201,24 @@ private fun TestItem(
             )
         }
     }
+}
+
+@Composable
+private fun SelectedItemIndicator() {
+    val borderWidth = 2.dp
+    val contentPadding = 6.dp
+    Box(
+        modifier = Modifier
+            .border(
+                width = borderWidth,
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(size = 8.dp + contentPadding + borderWidth),
+            )
+            .padding(all = borderWidth)
+            .padding(all = contentPadding)
+            .width(80.dp)
+            .height(120.dp),
+    )
 }
 
 @Composable
