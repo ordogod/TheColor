@@ -1,7 +1,6 @@
 package io.github.mmolosay.thecolor.presentation.settings.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -24,12 +23,12 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
@@ -39,6 +38,7 @@ import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Tex
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Title
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemContentPadding
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemValueSpacing
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun AppUiColorScheme(
@@ -105,6 +105,7 @@ internal fun NewAppUiColorSchemeSelection(
             val horizontalContentPaddingPx = (size.width / 2) - (firstItemWidth / 2)
             with(LocalDensity.current) { horizontalContentPaddingPx.toDp() }
         }
+        val coroutineScope = rememberCoroutineScope()
         val flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center)
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
@@ -113,39 +114,58 @@ internal fun NewAppUiColorSchemeSelection(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             flingBehavior = flingBehavior,
         ) {
+            val onItemClick: (index: Int) -> Unit = { index ->
+                coroutineScope.launch {
+                    listState.animateScrollToItem(index)
+                }
+            }
             item {
+                val index = 0
                 TestItem(
-                    ordinal = 1,
+                    onClick = { onItemClick(index) },
+                    ordinal = index + 1,
                 )
             }
             item {
+                val index = 1
                 TestItem(
-                    ordinal = 2,
+                    onClick = { onItemClick(index) },
+                    ordinal = index + 1,
                 )
             }
             item {
+                val index = 2
                 TestItem(
-                    ordinal = 3,
+                    onClick = { onItemClick(index) },
+                    ordinal = index + 1,
                 )
             }
             item {
+                val index = 3
                 TestItem(
-                    ordinal = 4,
+                    onClick = { onItemClick(index) },
+                    ordinal = index + 1,
                 )
             }
             item {
+                val index = 4
                 TestItem(
-                    ordinal = 5,
+                    onClick = { onItemClick(index) },
+                    ordinal = index + 1,
                 )
             }
             item {
+                val index = 5
                 TestItem(
-                    ordinal = 6,
+                    onClick = { onItemClick(index) },
+                    ordinal = index + 1,
                 )
             }
             item {
+                val index = 6
                 TestItem(
-                    ordinal = 7,
+                    onClick = { onItemClick(index) },
+                    ordinal = index + 1,
                 )
             }
         }
@@ -156,24 +176,23 @@ internal fun NewAppUiColorSchemeSelection(
 
 @Composable
 private fun TestItem(
+    onClick: () -> Unit,
     ordinal: Int,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Surface(
         modifier = modifier
             .width(80.dp)
-            .height(120.dp)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(percent = 10),
-            )
-            .background(MaterialTheme.colorScheme.surface),
-        contentAlignment = Alignment.Center,
+            .height(120.dp),
+        onClick = onClick,
+        shape = RoundedCornerShape(percent = 10),
+        border = BorderStroke(width = 3.dp, color = MaterialTheme.colorScheme.primary),
     ) {
-        Text(
-            text = ordinal.toString(),
-        )
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = ordinal.toString(),
+            )
+        }
     }
 }
 
