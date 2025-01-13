@@ -1,18 +1,20 @@
 package io.github.mmolosay.thecolor.presentation.center
 
-import io.github.mmolosay.thecolor.testing.MainDispatcherRule
+import io.github.mmolosay.thecolor.testing.MainDispatcherExtension
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
-import org.junit.Rule
-import org.junit.Test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
+@ExtendWith(MainDispatcherExtension::class)
 class ColorCenterViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
-
+    val testDispatcher = UnconfinedTestDispatcher()
     lateinit var sut: ColorCenterViewModel
 
     @Test
@@ -45,9 +47,10 @@ class ColorCenterViewModelTest {
         data.changePageEvent shouldBe null
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun createSut() =
         ColorCenterViewModel(
-            coroutineScope = CoroutineScope(context = mainDispatcherRule.testDispatcher),
+            coroutineScope = CoroutineScope(context = testDispatcher),
             colorDetailsViewModel = mockk(),
             colorSchemeViewModel = mockk(),
         ).also {

@@ -12,7 +12,7 @@ import io.github.mmolosay.thecolor.presentation.input.impl.field.TextFieldViewMo
 import io.github.mmolosay.thecolor.presentation.input.impl.model.DataState
 import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgbData
 import io.github.mmolosay.thecolor.presentation.input.impl.rgb.ColorInputRgbViewModel
-import io.github.mmolosay.thecolor.testing.MainDispatcherRule
+import io.github.mmolosay.thecolor.testing.MainDispatcherExtension
 import io.kotest.assertions.withClue
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -24,24 +24,27 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace as DomainSmartBackspace
 
-abstract class ColorInputRgbViewModelTest {
+@OptIn(ExperimentalCoroutinesApi::class)
+@ExtendWith(MainDispatcherExtension::class)
+class ColorInputRgbViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val testDispatcher = UnconfinedTestDispatcher()
 
     val mediator: ColorInputMediator = mockk {
         every { rgbColorInputFlow } returns flowOf(ColorInput.Rgb("", "", ""))
@@ -62,8 +65,8 @@ abstract class ColorInputRgbViewModelTest {
     }
     val textFieldViewModelFactory: TextFieldViewModel.Factory = TextFieldViewModelTestFactory(
         userPreferencesRepository = userPreferencesRepository,
-        defaultDispatcher = mainDispatcherRule.testDispatcher,
-        uiDataUpdateDispatcher = mainDispatcherRule.testDispatcher,
+        defaultDispatcher = testDispatcher,
+        uiDataUpdateDispatcher = testDispatcher,
     )
 
     val colorInputValidator: ColorInputValidator = mockk {
@@ -71,73 +74,6 @@ abstract class ColorInputRgbViewModelTest {
     }
 
     lateinit var sut: ColorInputRgbViewModel
-
-    fun createSut() =
-        ColorInputRgbViewModel(
-            coroutineScope = CoroutineScope(mainDispatcherRule.testDispatcher),
-            mediator = mediator,
-            eventStore = eventStore,
-            textFieldViewModelFactory = textFieldViewModelFactory,
-            colorInputValidator = colorInputValidator,
-            userPreferencesRepository = userPreferencesRepository,
-            uiDataUpdateDispatcher = mainDispatcherRule.testDispatcher,
-            defaultDispatcher = mainDispatcherRule.testDispatcher,
-        ).also {
-            sut = it
-        }
-
-    val dataState: DataState<ColorInputRgbData>
-        get() = sut.dataStateFlow.value
-
-    val data: ColorInputRgbData
-        get() {
-            dataState should beOfType<DataState.Ready<*>>() // assertion for clear failure message
-            return (dataState as DataState.Ready).data
-        }
-}
-
-@RunWith(Parameterized::class)
-class FilterRgbUserInputTest(
-    val string: String,
-    val expectedTextString: String,
-) : ColorInputRgbViewModelTest() {
-
-    @Test
-    fun `user input is filtered as expected`() {
-        createSut()
-
-        // we check only one component because the logic is same for all 3 of them
-        val text = data.rTextField.filterUserInput(string)
-
-        withClue("Filtering user input \"$string\" should return $expectedTextString") {
-            text shouldBe Text(expectedTextString)
-        }
-    }
-
-    companion object {
-
-        @JvmStatic
-        @Parameterized.Parameters
-        fun data() = listOf(
-            // can't work with Text() directly because it's a value class and inlined in runtime
-            /* #0  */ "abc1def2ghi3" shouldBeFilteredTo "123",
-            /* #1  */ "1234567890" shouldBeFilteredTo "123",
-            /* #2  */ "" shouldBeFilteredTo "",
-            /* #3  */ "0" shouldBeFilteredTo "0",
-            /* #4  */ "03" shouldBeFilteredTo "3",
-            /* #5  */ "003" shouldBeFilteredTo "3",
-            /* #6  */ "000" shouldBeFilteredTo "0",
-            /* #7  */ "30" shouldBeFilteredTo "30",
-            /* #8  */ "255" shouldBeFilteredTo "255",
-            /* #9  */ "256" shouldBeFilteredTo "25",
-        )
-
-        infix fun String.shouldBeFilteredTo(expectedText: String): Array<Any> =
-            arrayOf(this, expectedText)
-    }
-}
-
-class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `SUT is created with state 'BeingInitialized' if mediator RGB flow has no value yet`() {
@@ -158,7 +94,7 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `state becomes 'Ready' when mediator emits first value from RGB flow`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val rgbColorInputFlow = MutableSharedFlow<ColorInput.Rgb>()
             every { mediator.rgbColorInputFlow } returns rgbColorInputFlow
             createSut()
@@ -170,7 +106,7 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `state becomes Ready when 'smart backspace' value is emitted`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val flowOfSmartBackspace = MutableSharedFlow<DomainSmartBackspace>()
             every { userPreferencesRepository.flowOfSmartBackspace() } returns flowOfSmartBackspace
             createSut()
@@ -184,7 +120,7 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `initial data is not sent to mediator`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             createSut()
             val collectionJob = launch {
                 sut.dataStateFlow.collect() // subscriber to activate the flow
@@ -196,7 +132,7 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `data updated from UI is sent to mediator`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val parsedColor = mockk<Color>()
             every {
                 with(colorInputValidator) { ColorInput.Rgb("18", "", "").validate() }
@@ -224,7 +160,7 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `emission from mediator updates data`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val rgbColorInputFlow = MutableSharedFlow<ColorInput.Rgb>()
             every { mediator.rgbColorInputFlow } returns rgbColorInputFlow
             createSut()
@@ -243,7 +179,7 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `emission from mediator is not sent back to mediator and emission loop is not created`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val rgbColorInputFlow = MutableSharedFlow<ColorInput.Rgb>()
             every { mediator.rgbColorInputFlow } returns rgbColorInputFlow
             createSut()
@@ -274,7 +210,7 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
     @Test
     fun `emission of 'Smart Backspace' updates data accordingly`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val flowOfSmartBackspace =
                 MutableStateFlow(value = DomainSmartBackspace(enabled = false))
             every { userPreferencesRepository.flowOfSmartBackspace() } returns flowOfSmartBackspace
@@ -285,4 +221,64 @@ class OtherRgb : ColorInputRgbViewModelTest() {
 
             data.isSmartBackspaceEnabled shouldBe true
         }
+
+    @ParameterizedTest
+    @MethodSource("data")
+    fun `user input is filtered as expected`(
+        input: String,
+        expectedTextString: String,
+    ) {
+        createSut()
+
+        // we check only one component because the logic is same for all 3 of them
+        val text = data.rTextField.filterUserInput(input)
+
+        withClue("Filtering user input \"$input\" should return \"$expectedTextString\"") {
+            text shouldBe Text(expectedTextString)
+        }
+    }
+
+    fun createSut() =
+        ColorInputRgbViewModel(
+            coroutineScope = CoroutineScope(testDispatcher),
+            mediator = mediator,
+            eventStore = eventStore,
+            textFieldViewModelFactory = textFieldViewModelFactory,
+            colorInputValidator = colorInputValidator,
+            userPreferencesRepository = userPreferencesRepository,
+            uiDataUpdateDispatcher = testDispatcher,
+            defaultDispatcher = testDispatcher,
+        ).also {
+            sut = it
+        }
+
+    val dataState: DataState<ColorInputRgbData>
+        get() = sut.dataStateFlow.value
+
+    val data: ColorInputRgbData
+        get() {
+            dataState should beOfType<DataState.Ready<*>>() // assertion for clear failure message
+            return (dataState as DataState.Ready).data
+        }
+
+    companion object {
+
+        @JvmStatic
+        fun data() = listOf(
+            // can't work with Text() directly because it's a value class and inlined in runtime
+            /* #0  */ "abc1def2ghi3" shouldBeFilteredTo "123",
+            /* #1  */ "1234567890" shouldBeFilteredTo "123",
+            /* #2  */ "" shouldBeFilteredTo "",
+            /* #3  */ "0" shouldBeFilteredTo "0",
+            /* #4  */ "03" shouldBeFilteredTo "3",
+            /* #5  */ "003" shouldBeFilteredTo "3",
+            /* #6  */ "000" shouldBeFilteredTo "0",
+            /* #7  */ "30" shouldBeFilteredTo "30",
+            /* #8  */ "255" shouldBeFilteredTo "255",
+            /* #9  */ "256" shouldBeFilteredTo "25",
+        )
+
+        infix fun String.shouldBeFilteredTo(expectedText: String): Array<Any> =
+            arrayOf(this, expectedText)
+    }
 }
