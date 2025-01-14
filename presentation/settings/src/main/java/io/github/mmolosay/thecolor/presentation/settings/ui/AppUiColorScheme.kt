@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -47,7 +48,11 @@ import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Tex
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Title
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemContentPadding
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemValueSpacing
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @Composable
 internal fun AppUiColorScheme(
@@ -143,6 +148,25 @@ internal fun AppUiColorSchemeSelection(
                 // so waiting for it to be calculated and set first
                 if (horizontalContentPadding == null) return@LaunchedEffect
                 listState.scrollToItem(index = indexOfSelectedOption)
+            }
+
+            LaunchedEffect(listState) {
+                snapshotFlow { listState.isScrollInProgress }
+                    .distinctUntilChanged()
+                    .collect { isScrollInProgress ->
+                        if (isScrollInProgress) return@collect
+                        val viewportCenter = listState.layoutInfo.viewportSize.width / 2
+                        val itemClosestToCenter =
+                            listState.layoutInfo.visibleItemsInfo.minByOrNull { itemInfo ->
+                                val contentPadding = listState.layoutInfo.beforeContentPadding
+                                val itemCenter =
+                                    contentPadding + itemInfo.offset + (itemInfo.size / 2)
+                                val distanceToCenter = abs(itemCenter - viewportCenter)
+                                distanceToCenter
+                            }
+                        val indexOfCenteredItem = itemClosestToCenter?.index
+                        println("index of centered item: $indexOfCenteredItem")
+                    }
             }
         }
 
