@@ -1,5 +1,6 @@
 package io.github.mmolosay.thecolor.presentation.settings
 
+import io.github.mmolosay.thecolor.presentation.design.ColorSchemeResolver
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.UiColorSchemeSet as DomainUiColorSchemeSet
 
@@ -13,7 +14,7 @@ data class SettingsData(
     val changePreferredColorInputType: (DomainColorInputType) -> Unit,
 
     val appUiColorSchemeSet: DomainUiColorSchemeSet,
-    val supportedAppUiColorSchemeSets: List<DomainUiColorSchemeSet>,
+    val appUiColorSchemeOptions: List<UiColorSchemeOption>,
     val changeAppUiColorSchemeSet: (DomainUiColorSchemeSet) -> Unit,
 
     val isDynamicUiColorsEnabled: Boolean,
@@ -30,4 +31,10 @@ data class SettingsData(
 
     val isAutoProceedWithRandomizedColorsEnabled: Boolean,
     val changeAutoProceedWithRandomizedColorsEnablement: (Boolean) -> Unit,
-)
+) {
+
+    data class UiColorSchemeOption(
+        val colorSchemeSet: DomainUiColorSchemeSet,
+        val colorSchemeResolver: ColorSchemeResolver,
+    )
+}

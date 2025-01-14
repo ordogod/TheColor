@@ -6,6 +6,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.asSingletonSet
 import io.github.mmolosay.thecolor.domain.repository.UserPreferencesRepository
 import io.github.mmolosay.thecolor.domain.usecase.ResetUserPreferencesToDefaultUseCase
+import io.github.mmolosay.thecolor.presentation.design.toPresentation
+import io.github.mmolosay.thecolor.presentation.settings.SettingsData.UiColorSchemeOption
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -136,7 +138,7 @@ class SettingsViewModel @Inject constructor(
             changePreferredColorInputType = ::updatePreferredColorInputType,
 
             appUiColorSchemeSet = appUiColorSchemeSet,
-            supportedAppUiColorSchemeSets = supportedAppUiColorSchemeSets(),
+            appUiColorSchemeOptions = appUiColorSchemeOptions(),
             changeAppUiColorSchemeSet = ::updateAppUiColorSchemeSet,
 
             isDynamicUiColorsEnabled = dynamicUiColors.enabled,
@@ -156,17 +158,23 @@ class SettingsViewModel @Inject constructor(
         )
     }
 
-    private fun supportedAppUiColorSchemeSets(): List<DomainUiColorSchemeSet> =
+    private fun appUiColorSchemeOptions(): List<UiColorSchemeOption> =
         buildList {
-            DomainUiColorSchemeSet.DayNight
+            fun makeOption(colorSchemeSet: DomainUiColorSchemeSet) =
+                UiColorSchemeOption(
+                    colorSchemeSet = colorSchemeSet,
+                    colorSchemeResolver = colorSchemeSet.toPresentation(),
+                )
+
+            makeOption(DomainUiColorSchemeSet.DayNight)
                 .also { add(it) }
-            DomainUiColorScheme.Light.asSingletonSet()
+            makeOption(DomainUiColorScheme.Light.asSingletonSet())
                 .also { add(it) }
-            DomainUiColorScheme.Dark.asSingletonSet()
+            makeOption(DomainUiColorScheme.Dark.asSingletonSet())
                 .also { add(it) }
-            DomainUiColorScheme.Jungle.asSingletonSet()
+            makeOption(DomainUiColorScheme.Jungle.asSingletonSet())
                 .also { add(it) }
-            DomainUiColorScheme.Midnight.asSingletonSet()
+            makeOption(DomainUiColorScheme.Midnight.asSingletonSet())
                 .also { add(it) }
         }
 

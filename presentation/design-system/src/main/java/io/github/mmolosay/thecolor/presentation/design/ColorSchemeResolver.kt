@@ -32,3 +32,9 @@ object DayNightColorSchemeResolver : ColorSchemeResolver {
             }
         }
 }
+
+/**
+ * Creates a [ColorSchemeResolver] that always returns receiver [ColorScheme].
+ */
+fun ColorScheme.asColorSchemeResolver(): ColorSchemeResolver =
+    ColorSchemeResolver { _, _ -> this }

@@ -13,33 +13,40 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.github.mmolosay.thecolor.presentation.design.ColorScheme
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
+import io.github.mmolosay.thecolor.presentation.design.toMaterialColorScheme
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.AnimatedTextValue
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Description
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.TextValue
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Title
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemContentPadding
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemValueSpacing
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 internal fun AppUiColorScheme(
@@ -81,7 +88,7 @@ internal fun AppUiColorScheme(
 }
 
 @Composable
-internal fun NewAppUiColorSchemeSelection(
+internal fun AppUiColorSchemeSelection(
     options: List<AppUiColorSchemeOption>,
     modifier: Modifier = Modifier,
 ) {
@@ -89,6 +96,7 @@ internal fun NewAppUiColorSchemeSelection(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val indexOfSelectedOption = options.indexOfFirst { it.isSelected }
         val selectedOption = options.first { it.isSelected }
         Text(
             text = selectedOption.name,
@@ -114,66 +122,32 @@ internal fun NewAppUiColorSchemeSelection(
             val coroutineScope = rememberCoroutineScope()
             val flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center)
             LazyRow(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectableGroup(),
                 state = listState,
                 contentPadding = PaddingValues(horizontal = horizontalContentPadding ?: 0.dp),
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
                 flingBehavior = flingBehavior,
             ) {
-                val onItemClick: (index: Int) -> Unit = { index ->
-                    coroutineScope.launch {
-                        listState.animateScrollToItem(index)
-                    }
-                }
-                item {
-                    val index = 0
-                    TestItem(
-                        onClick = { onItemClick(index) },
-                        ordinal = index + 1,
+                itemsIndexed(options) { index, option ->
+                    Option(
+                        option = option,
+                        onClick = {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(index)
+                                option.onSelect()
+                            }
+                        },
                     )
                 }
-                item {
-                    val index = 1
-                    TestItem(
-                        onClick = { onItemClick(index) },
-                        ordinal = index + 1,
-                    )
-                }
-                item {
-                    val index = 2
-                    TestItem(
-                        onClick = { onItemClick(index) },
-                        ordinal = index + 1,
-                    )
-                }
-                item {
-                    val index = 3
-                    TestItem(
-                        onClick = { onItemClick(index) },
-                        ordinal = index + 1,
-                    )
-                }
-                item {
-                    val index = 4
-                    TestItem(
-                        onClick = { onItemClick(index) },
-                        ordinal = index + 1,
-                    )
-                }
-                item {
-                    val index = 5
-                    TestItem(
-                        onClick = { onItemClick(index) },
-                        ordinal = index + 1,
-                    )
-                }
-                item {
-                    val index = 6
-                    TestItem(
-                        onClick = { onItemClick(index) },
-                        ordinal = index + 1,
-                    )
-                }
+            }
+
+            LaunchedEffect(horizontalContentPadding) {
+                // seems like changing 'contentPadding' affects scrolling,
+                //  so waiting for it to be calculated and set first
+                if (horizontalContentPadding == null) return@LaunchedEffect
+                listState.scrollToItem(index = indexOfSelectedOption)
             }
         }
 
@@ -182,85 +156,58 @@ internal fun NewAppUiColorSchemeSelection(
 }
 
 @Composable
-private fun TestItem(
-    onClick: () -> Unit,
-    ordinal: Int,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier
-            .width(80.dp)
-            .height(120.dp),
-        onClick = onClick,
-        shape = RoundedCornerShape(size = 8.dp),
-        border = BorderStroke(width = 0.5.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)),
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = ordinal.toString(),
-            )
-        }
-    }
-}
-
-@Composable
 private fun SelectedItemIndicator() {
     val borderWidth = 2.dp
     val contentPadding = 6.dp
+    val cornerSize = OptionItemUi.CornerSize + contentPadding + borderWidth
     Box(
         modifier = Modifier
             .border(
                 width = borderWidth,
                 color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(size = 8.dp + contentPadding + borderWidth),
+                shape = RoundedCornerShape(cornerSize),
             )
             .padding(all = borderWidth)
             .padding(all = contentPadding)
-            .width(80.dp)
-            .height(120.dp),
+            .size(OptionItemUi.Size),
     )
 }
 
-@Composable
-internal fun AppUiColorSchemeSelection(
-    options: List<AppUiColorSchemeOption>,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier.selectableGroup(),
-    ) {
-        options.forEach { option ->
-            Option(option)
-        }
-    }
-}
+
 
 @Composable
 private fun Option(
     option: AppUiColorSchemeOption,
+    onClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .selectable(
-                selected = option.isSelected,
-                onClick = option.onSelect,
-                role = Role.RadioButton,
-            )
-            .padding(horizontal = 32.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = option.name)
+    val color = option.currentColorScheme.toMaterialColorScheme(LocalContext.current).surface
+    Surface(
+        modifier = Modifier.size(OptionItemUi.Size),
+        selected = option.isSelected,
+        onClick = onClick,
+        shape = RoundedCornerShape(OptionItemUi.CornerSize),
+        color = color,
+        border = BorderStroke(
+            width = 0.5.dp,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.20f),
+        ),
+    ) {}
+}
 
-        Spacer(modifier = Modifier.weight(1f))
-        RadioButton(
-            selected = option.isSelected,
-            onClick = option.onSelect,
-        )
+private object OptionItemUi {
+    val Size = run {
+        val goldenRatio = 1.618f
+        val width = 80.dp
+        val height = width * goldenRatio
+        DpSize(width, height)
     }
+    val CornerSize = 8.dp
 }
 
 internal data class AppUiColorSchemeOption(
     val name: String,
+    val currentColorScheme: ColorScheme,
+    val mayResolveInDifferentColorSchemes: Boolean,
     val isSelected: Boolean,
     val onSelect: () -> Unit,
 )
@@ -286,51 +233,41 @@ private fun AppUiColorSchemePreview() {
     backgroundColor = 0xFFFFFFFF,
 )
 @Composable
-private fun NewAppUiColorSchemeSelectionPreview() {
-    TheColorTheme {
-        val options = listOf(
-            AppUiColorSchemeOption(
-                name = "Light",
-                isSelected = true,
-                onSelect = {},
-            ),
-            AppUiColorSchemeOption(
-                name = "Dark",
-                isSelected = false,
-                onSelect = {},
-            ),
-            AppUiColorSchemeOption(
-                name = "Auto (follows system)",
-                isSelected = false,
-                onSelect = {},
-            ),
-        )
-        NewAppUiColorSchemeSelection(
-            options = options,
-        )
-    }
-}
-
-@Preview(
-    showBackground = true,
-    backgroundColor = 0xFFFFFFFF,
-)
-@Composable
 private fun AppUiColorSchemeSelectionPreview() {
     TheColorTheme {
         val options = listOf(
             AppUiColorSchemeOption(
+                name = "Auto (follows system)",
+                currentColorScheme = ColorScheme.Light,
+                mayResolveInDifferentColorSchemes = true,
+                isSelected = false,
+                onSelect = {},
+            ),
+            AppUiColorSchemeOption(
                 name = "Light",
+                currentColorScheme = ColorScheme.Light,
+                mayResolveInDifferentColorSchemes = false,
                 isSelected = true,
                 onSelect = {},
             ),
             AppUiColorSchemeOption(
                 name = "Dark",
+                currentColorScheme = ColorScheme.Dark,
+                mayResolveInDifferentColorSchemes = false,
                 isSelected = false,
                 onSelect = {},
             ),
             AppUiColorSchemeOption(
-                name = "Auto (follows system)",
+                name = "Jungle",
+                currentColorScheme = ColorScheme.Jungle,
+                mayResolveInDifferentColorSchemes = false,
+                isSelected = false,
+                onSelect = {},
+            ),
+            AppUiColorSchemeOption(
+                name = "Midnight",
+                currentColorScheme = ColorScheme.Midnight,
+                mayResolveInDifferentColorSchemes = false,
                 isSelected = false,
                 onSelect = {},
             ),

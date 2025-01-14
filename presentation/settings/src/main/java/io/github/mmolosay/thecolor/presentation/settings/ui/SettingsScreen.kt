@@ -39,11 +39,16 @@ import io.github.mmolosay.debounce.debounced
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.asSingletonSet
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.isSingleton
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.single
+import io.github.mmolosay.thecolor.presentation.design.ColorScheme
+import io.github.mmolosay.thecolor.presentation.design.DayNightColorSchemeResolver
 import io.github.mmolosay.thecolor.presentation.design.Material3DynamicColorsAvailability.areDynamicColorsAvailable
 import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
+import io.github.mmolosay.thecolor.presentation.design.asColorSchemeResolver
+import io.github.mmolosay.thecolor.presentation.design.systemBrightness
 import io.github.mmolosay.thecolor.presentation.impl.onlyBottom
 import io.github.mmolosay.thecolor.presentation.impl.withoutBottom
 import io.github.mmolosay.thecolor.presentation.settings.SettingsData
+import io.github.mmolosay.thecolor.presentation.settings.SettingsData.UiColorSchemeOption
 import io.github.mmolosay.thecolor.presentation.settings.SettingsUiStrings
 import io.github.mmolosay.thecolor.presentation.settings.SettingsViewModel
 import io.github.mmolosay.thecolor.presentation.settings.SettingsViewModel.DataState
@@ -231,11 +236,16 @@ fun Settings(
 
         item("app ui color scheme") {
             var showSelectionDialog by remember { mutableStateOf(false) }
-            val options = data.supportedAppUiColorSchemeSets.map { mode ->
+            val options = data.appUiColorSchemeOptions.map { option ->
                 AppUiColorSchemeOption(
-                    name = mode.toVerboseUiString(strings),
-                    isSelected = (data.appUiColorSchemeSet == mode),
-                    onSelect = { data.changeAppUiColorSchemeSet(mode) },
+                    name = option.colorSchemeSet.toVerboseUiString(strings),
+                    currentColorScheme = option.colorSchemeResolver.resolve(
+                        brightness = systemBrightness(),
+                        useDynamicColorSchemes = true, // TODO: we shouldn't pass this parameter here
+                    ),
+                    mayResolveInDifferentColorSchemes = !option.colorSchemeSet.isSingleton(),
+                    isSelected = (data.appUiColorSchemeSet == option.colorSchemeSet),
+                    onSelect = { data.changeAppUiColorSchemeSet(option.colorSchemeSet) },
                 )
             }
             AppUiColorScheme(
@@ -263,7 +273,7 @@ fun Settings(
                     contentWindowInsets = { windowInsets.withoutBottom() },
                 ) {
                     val bottomWindowInsets = windowInsets.onlyBottom()
-                    NewAppUiColorSchemeSelection(
+                    AppUiColorSchemeSelection(
                         modifier = Modifier
                             .padding(bottomWindowInsets.asPaddingValues())
                             .consumeWindowInsets(bottomWindowInsets),
@@ -393,10 +403,19 @@ private fun previewData() =
         changePreferredColorInputType = {},
 
         appUiColorSchemeSet = DomainUiColorSchemeSet.DayNight,
-        supportedAppUiColorSchemeSets = listOf(
-            DomainUiColorScheme.Light.asSingletonSet(),
-            DomainUiColorScheme.Dark.asSingletonSet(),
-            DomainUiColorSchemeSet.DayNight,
+        appUiColorSchemeOptions = listOf(
+            UiColorSchemeOption(
+                colorSchemeSet = DomainUiColorSchemeSet.DayNight,
+                colorSchemeResolver = DayNightColorSchemeResolver,
+            ),
+            UiColorSchemeOption(
+                colorSchemeSet = DomainUiColorScheme.Light.asSingletonSet(),
+                colorSchemeResolver = ColorScheme.Light.asColorSchemeResolver(),
+            ),
+            UiColorSchemeOption(
+                colorSchemeSet = DomainUiColorScheme.Dark.asSingletonSet(),
+                colorSchemeResolver = ColorScheme.Dark.asColorSchemeResolver(),
+            ),
         ),
         changeAppUiColorSchemeSet = {},
 
