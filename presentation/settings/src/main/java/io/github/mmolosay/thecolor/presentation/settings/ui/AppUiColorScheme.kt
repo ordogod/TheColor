@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -25,13 +26,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -44,9 +47,7 @@ import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Tex
 import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Title
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemContentPadding
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemValueSpacing
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 internal fun AppUiColorScheme(
@@ -96,8 +97,11 @@ internal fun AppUiColorSchemeSelection(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val coroutineScope = rememberCoroutineScope()
+        val density = LocalDensity.current
         val indexOfSelectedOption = options.indexOfFirst { it.isSelected }
-        val selectedOption = options.first { it.isSelected }
+        val selectedOption = options[indexOfSelectedOption]
+
         Text(
             text = selectedOption.name,
         )
@@ -109,17 +113,8 @@ internal fun AppUiColorSchemeSelection(
             SelectedItemIndicator()
 
             val listState = rememberLazyListState()
-            val info = listState.layoutInfo
-            val horizontalContentPadding = run {
-                val size = info.viewportSize
-                if (size == IntSize.Zero) return@run null
-                val firstVisibleItemInfo = info.visibleItemsInfo.firstOrNull() ?: return@run null
-                val firstItemWidth = firstVisibleItemInfo.size
-                if (firstItemWidth == 0) return@run null
-                val horizontalContentPaddingPx = (size.width / 2) - (firstItemWidth / 2)
-                with(LocalDensity.current) { horizontalContentPaddingPx.toDp() }
-            }
-            val coroutineScope = rememberCoroutineScope()
+            val layoutInfo = listState.layoutInfo
+            val horizontalContentPadding = layoutInfo.calculateHorizontalContentPadding(density)
             val flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center)
             LazyRow(
                 modifier = Modifier
@@ -145,13 +140,30 @@ internal fun AppUiColorSchemeSelection(
 
             LaunchedEffect(horizontalContentPadding) {
                 // seems like changing 'contentPadding' affects scrolling,
-                //  so waiting for it to be calculated and set first
+                // so waiting for it to be calculated and set first
                 if (horizontalContentPadding == null) return@LaunchedEffect
                 listState.scrollToItem(index = indexOfSelectedOption)
             }
         }
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun LazyListLayoutInfo.calculateHorizontalContentPadding(
+    density: Density,
+): Dp? {
+    val viewportSize = this.viewportSize
+    val firstVisibleItemWidth = this.visibleItemsInfo.firstOrNull()?.size
+    return remember(viewportSize, firstVisibleItemWidth) calc@{
+        if (viewportSize == IntSize.Zero) return@calc null // not composed / measured yet
+        if (firstVisibleItemWidth == null) return@calc null // not composed / measured yet
+        if (firstVisibleItemWidth == 0) return@calc null // not measured yet
+        // assuming first and last items in list have the same size, and thus both
+        // start and end paddings are the same
+        val horizontalContentPaddingPx = (viewportSize.width / 2) - (firstVisibleItemWidth / 2)
+        with(density) { horizontalContentPaddingPx.toDp() }
     }
 }
 
