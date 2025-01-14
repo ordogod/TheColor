@@ -26,8 +26,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,8 +52,6 @@ import io.github.mmolosay.thecolor.presentation.settings.ui.ItemUiComponents.Tit
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemContentPadding
 import io.github.mmolosay.thecolor.presentation.settings.ui.UiComponents.DefaultItemValueSpacing
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -121,6 +122,7 @@ internal fun AppUiColorSchemeSelection(
             val layoutInfo = listState.layoutInfo
             val horizontalContentPadding = layoutInfo.calculateHorizontalContentPadding(density)
             val flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center)
+            var indexOfSnappedListItem by remember { mutableStateOf<Int?>(null) }
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,8 +167,15 @@ internal fun AppUiColorSchemeSelection(
                                 distanceToCenter
                             }
                         val indexOfCenteredItem = itemClosestToCenter?.index
-                        println("index of centered item: $indexOfCenteredItem")
+                        indexOfSnappedListItem = indexOfCenteredItem
                     }
+            }
+
+            LaunchedEffect(indexOfSnappedListItem) {
+                // { i -> i } mapping because all items of the list are options
+                val indexOfOption = indexOfSnappedListItem ?: return@LaunchedEffect
+                val option = options[indexOfOption]
+                option.onSelect()
             }
         }
 
