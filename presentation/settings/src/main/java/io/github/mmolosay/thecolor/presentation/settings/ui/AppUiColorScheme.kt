@@ -179,7 +179,7 @@ internal fun AppUiColorSchemeSelection(
             }
         }
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
     }
 }
 
