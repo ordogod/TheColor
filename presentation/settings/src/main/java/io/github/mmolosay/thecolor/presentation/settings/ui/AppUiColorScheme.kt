@@ -123,6 +123,7 @@ internal fun AppUiColorSchemeSelection(
             val horizontalContentPadding = layoutInfo.calculateHorizontalContentPadding(density)
             val flingBehavior = rememberSnapFlingBehavior(listState, SnapPosition.Center)
             var indexOfSnappedListItem by remember { mutableStateOf<Int?>(null) }
+            val isUiCalculated = (horizontalContentPadding != null)
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -152,7 +153,8 @@ internal fun AppUiColorSchemeSelection(
                 listState.scrollToItem(index = indexOfSelectedOption)
             }
 
-            LaunchedEffect(listState) {
+            LaunchedEffect(listState, isUiCalculated) {
+                if (!isUiCalculated) return@LaunchedEffect
                 snapshotFlow { listState.isScrollInProgress }
                     .distinctUntilChanged()
                     .collect { isScrollInProgress ->
@@ -179,7 +181,7 @@ internal fun AppUiColorSchemeSelection(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(32.dp))
     }
 }
 
@@ -241,9 +243,8 @@ private fun Option(
 
 private object OptionItemUi {
     val Size = run {
-        val goldenRatio = 1.618f
         val width = 80.dp
-        val height = width * goldenRatio
+        val height = width * 1.32f
         DpSize(width, height)
     }
     val CornerSize = 8.dp
