@@ -146,10 +146,8 @@ internal fun AppUiColorSchemeSelection(
                 }
             }
 
-            LaunchedEffect(horizontalContentPadding) {
-                // seems like changing 'contentPadding' affects scrolling,
-                // so waiting for it to be calculated and set first
-                if (horizontalContentPadding == null) return@LaunchedEffect
+            LaunchedEffect(isUiCalculated) {
+                if (!isUiCalculated) return@LaunchedEffect
                 listState.scrollToItem(index = indexOfSelectedOption)
             }
 
