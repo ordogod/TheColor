@@ -133,6 +133,10 @@ A color scheme of the application. The options are:
  - Dark, always, irregarding of device's Dark mode setting.
  - Auto. Resolves into either Light or Dark depending on the device's Dark mode setting.
 
+### Dynamic colors for UI theme
+Computes color schemes of some UI themes based on user's device wallpaper in the launcher.
+Only works with following UI themes: Auto, Light, Dark.
+
 #### Resume from last searched color
 On app startup, the *Home* screen will remember the last color that was proceeded with in the previous app session. This color will be automatically proceeded with.
 
