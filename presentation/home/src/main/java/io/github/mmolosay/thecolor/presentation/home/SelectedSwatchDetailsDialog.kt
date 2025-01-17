@@ -12,11 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.mmolosay.thecolor.presentation.api.ColorInt
 import io.github.mmolosay.thecolor.presentation.api.nav.bar.NavBarAppearance
@@ -27,8 +27,8 @@ import io.github.mmolosay.thecolor.presentation.design.TheColorTheme
 import io.github.mmolosay.thecolor.presentation.design.colorsOnDarkSurface
 import io.github.mmolosay.thecolor.presentation.details.ColorDetails
 import io.github.mmolosay.thecolor.presentation.details.ColorDetailsCrossfade
-import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
 import io.github.mmolosay.thecolor.presentation.details.ColorDetailsOnTintedSurfaceDefaults
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsSeedData
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel
 import io.github.mmolosay.thecolor.presentation.impl.ExtendedLifecycleEventObserver
@@ -66,6 +66,18 @@ internal fun SelectedSwatchDetailsDialog(
     val colorsOnTintedSurface = ColorDetailsOnTintedSurfaceDefaults.colorsOnTintedSurface(seedData)
     val windowInsets = BottomSheetDefaults.windowInsets
 
+    /*
+     * TODO: ModalBottomSheet invisible icons in dark status bar
+     *  https://issuetracker.google.com/issues/362539765
+     *  Fixed in androidx.compose.material3:material3:1.4.0-alpha03
+     *  (version at the moment of writing is 1.3.1)
+     */
+    /*
+     * TODO: ModalBottomSheet adds light scrim to 3-button navigation bar
+     *  https://issuetracker.google.com/issues/374013416
+     *  Supposedly fixed in androidx.compose.material3:material3:1.4.0-alpha03
+     *  (version at the moment of writing is 1.3.1)
+     */
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -76,7 +88,7 @@ internal fun SelectedSwatchDetailsDialog(
                 color = colorsOnTintedSurface.muted,
             )
         },
-        windowInsets = windowInsets.withoutBottom(),
+        contentWindowInsets = { windowInsets.withoutBottom() },
     ) {
         Content(
             surfaceColor = Color.Unspecified, // already has a background due to ModalBottomSheet's 'containerColor'
@@ -175,7 +187,7 @@ private fun Preview() {
                     initialColorData = null,
                 )
             ),
-            windowInsets = BottomSheetDefaults.windowInsets
+            windowInsets = BottomSheetDefaults.windowInsets,
         )
     }
 }

@@ -16,6 +16,9 @@ data class SettingsData(
     val supportedAppUiColorSchemeSets: List<DomainUiColorSchemeSet>,
     val changeAppUiColorSchemeSet: (DomainUiColorSchemeSet) -> Unit,
 
+    val isDynamicUiColorsEnabled: Boolean,
+    val changeDynamicUiColorsEnablement: (Boolean) -> Unit,
+
     val isResumeFromLastSearchedColorOnStartupEnabled: Boolean,
     val changeResumeFromLastSearchedColorOnStartupEnablement: (Boolean) -> Unit,
 

@@ -2,6 +2,7 @@ package io.github.mmolosay.thecolor.domain.repository
 
 import io.github.mmolosay.thecolor.domain.model.ColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.DynamicUiColors
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace
@@ -14,6 +15,9 @@ interface UserPreferencesRepository {
 
     fun flowOfAppUiColorSchemeSet(): Flow<UiColorSchemeSet>
     suspend fun setAppUiColorSchemeSet(value: UiColorSchemeSet?)
+
+    fun flowOfDynamicUiColors(): Flow<DynamicUiColors>
+    suspend fun setDynamicUiColors(value: DynamicUiColors?)
 
     fun flowOfResumeFromLastSearchedColorOnStartup(): Flow<ResumeFromLastSearchedColorOnStartup>
     suspend fun setResumeFromLastSearchedColorOnStartup(value: ResumeFromLastSearchedColorOnStartup?)

@@ -17,6 +17,7 @@ import javax.inject.Inject
 import javax.inject.Named
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.AutoProceedWithRandomizedColors as DomainAutoProceedWithRandomizedColors
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.DynamicUiColors as DomainDynamicUiColors
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.ResumeFromLastSearchedColorOnStartup as DomainShouldResumeFromLastSearchedColorOnStartup
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SelectAllTextOnTextFieldFocus as DomainSelectAllTextOnTextFieldFocus
 import io.github.mmolosay.thecolor.domain.model.UserPreferences.SmartBackspace as DomainSmartBackspace
@@ -35,6 +36,7 @@ class SettingsViewModel @Inject constructor(
             listOf(
                 userPreferencesRepository.flowOfColorInputType(),
                 userPreferencesRepository.flowOfAppUiColorSchemeSet(),
+                userPreferencesRepository.flowOfDynamicUiColors(),
                 userPreferencesRepository.flowOfResumeFromLastSearchedColorOnStartup(),
                 userPreferencesRepository.flowOfSmartBackspace(),
                 userPreferencesRepository.flowOfSelectAllTextOnTextFieldFocus(),
@@ -64,6 +66,13 @@ class SettingsViewModel @Inject constructor(
     private fun updateAppUiColorSchemeSet(value: DomainUiColorSchemeSet) {
         viewModelScope.launch(defaultDispatcher) {
             userPreferencesRepository.setAppUiColorSchemeSet(value)
+        }
+    }
+
+    private fun updateDynamicUiColorsEnablement(value: Boolean) {
+        viewModelScope.launch(defaultDispatcher) {
+            val domainModel = DomainDynamicUiColors(value)
+            userPreferencesRepository.setDynamicUiColors(domainModel)
         }
     }
 
@@ -98,19 +107,23 @@ class SettingsViewModel @Inject constructor(
     // that's the only way to combine() more than 5 flows of different types
     private fun createData(
         userSettings: Array<Any>,
-    ): SettingsData =
-        createData(
-            preferredColorInputType = userSettings[0] as DomainColorInputType,
-            appUiColorSchemeSet = userSettings[1] as DomainUiColorSchemeSet,
-            shouldResumeFromLastSearchedColorOnStartup = userSettings[2] as DomainShouldResumeFromLastSearchedColorOnStartup,
-            smartBackspace = userSettings[3] as DomainSmartBackspace,
-            selectAllTextOnTextFieldFocus = userSettings[4] as DomainSelectAllTextOnTextFieldFocus,
-            autoProceedWithRandomizedColors = userSettings[5] as DomainAutoProceedWithRandomizedColors,
+    ): SettingsData {
+        val iterator = userSettings.iterator()
+        return createData(
+            preferredColorInputType = iterator.next() as DomainColorInputType,
+            appUiColorSchemeSet = iterator.next() as DomainUiColorSchemeSet,
+            dynamicUiColors = iterator.next() as DomainDynamicUiColors,
+            shouldResumeFromLastSearchedColorOnStartup = iterator.next()as DomainShouldResumeFromLastSearchedColorOnStartup,
+            smartBackspace = iterator.next() as DomainSmartBackspace,
+            selectAllTextOnTextFieldFocus = iterator.next() as DomainSelectAllTextOnTextFieldFocus,
+            autoProceedWithRandomizedColors = iterator.next() as DomainAutoProceedWithRandomizedColors,
         )
+    }
 
     private fun createData(
         preferredColorInputType: DomainColorInputType,
         appUiColorSchemeSet: DomainUiColorSchemeSet,
+        dynamicUiColors: DomainDynamicUiColors,
         shouldResumeFromLastSearchedColorOnStartup: DomainShouldResumeFromLastSearchedColorOnStartup,
         smartBackspace: DomainSmartBackspace,
         selectAllTextOnTextFieldFocus: DomainSelectAllTextOnTextFieldFocus,
@@ -125,6 +138,9 @@ class SettingsViewModel @Inject constructor(
             appUiColorSchemeSet = appUiColorSchemeSet,
             supportedAppUiColorSchemeSets = supportedAppUiColorSchemeSets(),
             changeAppUiColorSchemeSet = ::updateAppUiColorSchemeSet,
+
+            isDynamicUiColorsEnabled = dynamicUiColors.enabled,
+            changeDynamicUiColorsEnablement = ::updateDynamicUiColorsEnablement,
 
             isResumeFromLastSearchedColorOnStartupEnabled = shouldResumeFromLastSearchedColorOnStartup.enabled,
             changeResumeFromLastSearchedColorOnStartupEnablement = ::updateResumeFromLastSearchedColorOnStartupEnablement,
@@ -142,11 +158,15 @@ class SettingsViewModel @Inject constructor(
 
     private fun supportedAppUiColorSchemeSets(): List<DomainUiColorSchemeSet> =
         buildList {
+            DomainUiColorSchemeSet.DayNight
+                .also { add(it) }
             DomainUiColorScheme.Light.asSingletonSet()
                 .also { add(it) }
             DomainUiColorScheme.Dark.asSingletonSet()
                 .also { add(it) }
-            DomainUiColorSchemeSet.DayNight
+            DomainUiColorScheme.Jungle.asSingletonSet()
+                .also { add(it) }
+            DomainUiColorScheme.Midnight.asSingletonSet()
                 .also { add(it) }
         }
 

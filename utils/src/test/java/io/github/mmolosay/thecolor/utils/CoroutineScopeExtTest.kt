@@ -4,7 +4,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 
 class CoroutineScopeExtTest {

@@ -3,6 +3,7 @@ package io.github.mmolosay.thecolor.presentation.impl
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.os.Build
 import android.view.View
 import androidx.annotation.ColorInt
 import androidx.core.view.WindowCompat
@@ -20,7 +21,10 @@ fun View.changeNavigationBar(
     val window = this.context.findActivityContext().window
 
     if (color != null) {
-        window.navigationBarColor = color
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            @Suppress("DEPRECATION") // doesn't recognize version check for some reason
+            window.navigationBarColor = color
+        }
     }
     if (useLightTintForControls != null) {
         WindowCompat.getInsetsController(window, this).run {

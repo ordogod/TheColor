@@ -52,7 +52,7 @@ internal fun ChangePageButton(
     val colors = ButtonDefaults.outlinedButtonColors(
         contentColor = colorsOnTintedSurface.accent,
     )
-    val border = ButtonDefaults.outlinedButtonBorder.copy(
+    val border = ButtonDefaults.outlinedButtonBorder().copy(
         brush = SolidColor(colorsOnTintedSurface.accent),
     )
     val addedTextStyle = TextStyle(

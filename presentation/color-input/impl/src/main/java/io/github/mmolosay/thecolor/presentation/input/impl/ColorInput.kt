@@ -14,11 +14,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,33 +109,29 @@ private fun InputSelector(
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        CompositionLocalProvider(
-            LocalMinimumInteractiveComponentEnforcement provides false,
-        ) {
-            data.orderedInputTypes.forEach { type ->
-                val isSelected = (type == data.selectedInputType)
-                val contentColor = LocalContentColor.current
-                val colors = FilterChipDefaults.filterChipColors(
-                    labelColor = contentColor.copy(alpha = 0.60f),
-                    // selectedLabelColor as default
-                )
-                val border = FilterChipDefaults.filterChipBorder(
-                    enabled = true, // constant
-                    selected = isSelected,
-                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.60f),
-                    // selectedBorderColor doesn't matter because it has 0 width
-                )
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { data.onInputTypeChange(type) },
-                    label = {
-                        val labelText = type.label(strings)
-                        ChipLabel(text = labelText)
-                    },
-                    colors = colors,
-                    border = border,
-                )
-            }
+        data.orderedInputTypes.forEach { type ->
+            val isSelected = (type == data.selectedInputType)
+            val contentColor = LocalContentColor.current
+            val colors = FilterChipDefaults.filterChipColors(
+                labelColor = contentColor.copy(alpha = 0.60f),
+                // selectedLabelColor as default
+            )
+            val border = FilterChipDefaults.filterChipBorder(
+                enabled = true, // constant
+                selected = isSelected,
+                borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.60f),
+                // selectedBorderColor doesn't matter because it has 0 width
+            )
+            FilterChip(
+                selected = isSelected,
+                onClick = { data.onInputTypeChange(type) },
+                label = {
+                    val labelText = type.label(strings)
+                    ChipLabel(text = labelText)
+                },
+                colors = colors,
+                border = border,
+            )
         }
     }
 }

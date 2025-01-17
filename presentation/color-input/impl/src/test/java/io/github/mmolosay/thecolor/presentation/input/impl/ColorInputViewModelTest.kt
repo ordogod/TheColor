@@ -2,21 +2,24 @@ package io.github.mmolosay.thecolor.presentation.input.impl
 
 import io.github.mmolosay.thecolor.domain.repository.UserPreferencesRepository
 import io.github.mmolosay.thecolor.presentation.input.impl.ColorInputViewModel.DataState
-import io.github.mmolosay.thecolor.testing.MainDispatcherRule
+import io.github.mmolosay.thecolor.testing.MainDispatcherExtension
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import org.junit.Rule
-import org.junit.Test
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import io.github.mmolosay.thecolor.domain.model.ColorInputType as DomainColorInputType
 
+@OptIn(ExperimentalCoroutinesApi::class)
+@ExtendWith(MainDispatcherExtension::class)
 class ColorInputViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val testDispatcher = UnconfinedTestDispatcher()
 
     val mediator: ColorInputMediator = mockk()
     val userPreferencesRepository: UserPreferencesRepository = mockk()
@@ -70,13 +73,13 @@ class ColorInputViewModelTest {
 
     fun createSut() =
         ColorInputViewModel(
-            coroutineScope = CoroutineScope(context = mainDispatcherRule.testDispatcher),
+            coroutineScope = CoroutineScope(context = testDispatcher),
             eventStore = mockk(),
             mediator = mediator,
             hexViewModelFactory = { _, _, _ -> mockk() },
             rgbViewModelFactory = { _, _, _ -> mockk() },
             userPreferencesRepository = userPreferencesRepository,
-            defaultDispatcher = mainDispatcherRule.testDispatcher,
+            defaultDispatcher = testDispatcher,
         ).also {
             sut = it
         }

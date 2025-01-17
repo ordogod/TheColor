@@ -8,6 +8,7 @@ import io.github.mmolosay.thecolor.presentation.design.toPresentation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import io.github.mmolosay.thecolor.domain.model.UserPreferences.DynamicUiColors as DomainDynamicUiColors
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -18,4 +19,8 @@ class MainViewModel @Inject constructor(
         userPreferencesRepository
             .flowOfAppUiColorSchemeSet()
             .map { it.toPresentation() }
+
+    val dynamicUiColorsFlow: Flow<DomainDynamicUiColors> =
+        userPreferencesRepository
+            .flowOfDynamicUiColors()
 }

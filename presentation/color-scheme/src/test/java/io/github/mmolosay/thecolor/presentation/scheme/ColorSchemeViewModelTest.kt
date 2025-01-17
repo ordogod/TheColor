@@ -14,7 +14,7 @@ import io.github.mmolosay.thecolor.presentation.api.ColorToColorIntUseCase
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeData.Changes
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeData.SwatchCount
 import io.github.mmolosay.thecolor.presentation.scheme.ColorSchemeViewModel.DataState
-import io.github.mmolosay.thecolor.testing.MainDispatcherRule
+import io.github.mmolosay.thecolor.testing.MainDispatcherExtension
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.beOfType
@@ -28,14 +28,16 @@ import io.mockk.runs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import io.github.mmolosay.thecolor.domain.model.ColorScheme as DomainColorScheme
 
 /**
@@ -48,10 +50,11 @@ import io.github.mmolosay.thecolor.domain.model.ColorScheme as DomainColorScheme
  * This approach produces data as if it was in production, meaning that contents are plausible
  * and appropriate for tests that verify values.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
+@ExtendWith(MainDispatcherExtension::class)
 class ColorSchemeViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val testDispatcher = UnconfinedTestDispatcher()
 
     val commandProvider: ColorSchemeCommandProvider = mockk {
         every { commandFlow } returns emptyFlow()
@@ -77,7 +80,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command results in emission of Loading state`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns mockk()
@@ -106,7 +109,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command results in emission of Ready state`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns Result.Success(value = mockk())
@@ -129,7 +132,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command cancells previous 'fetch data' job, so that repository is only accessed once`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             val fetchedScheme: ColorScheme = mockk(relaxed = true)
@@ -175,7 +178,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `selecting new mode updates selected mode`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns
@@ -193,7 +196,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `selecting new mode that is different from the active mode results in 'Changes Present'`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns
@@ -211,7 +214,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `selecting new mode that is same as the active mode results in 'Changes None'`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns
@@ -231,7 +234,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `selecting new swatch count updates selected swatch count`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns
@@ -249,7 +252,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `selecting new swatch count that is different from the active swatch count results in 'Changes Present'`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns
@@ -267,7 +270,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `selecting new swatch count that is same as the active swatch count results in 'Changes None'`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns
@@ -287,7 +290,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `calling 'apply changes' uses color of last 'fetch data' command as seed`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns Result.Success(value = someDomainColorScheme())
@@ -319,7 +322,7 @@ class ColorSchemeViewModelTest {
      */
     @Test
     fun `emission of 'fetch data' command that triggers failing data fetching results in emission of 'DataState Error'`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns
@@ -348,7 +351,7 @@ class ColorSchemeViewModelTest {
      */
     @Test
     fun `invoking 'try again' action of 'DataState Error' with changed selected values uses those values for repeated request`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             fun mockGetColorSchemeReturnsSuccess() {
                 coEvery { getColorScheme(request = any<Request>()) } returns
                         Result.Success(value = someDomainColorScheme())
@@ -382,7 +385,7 @@ class ColorSchemeViewModelTest {
 
     @Test
     fun `invoking 'on swatch select' action sends corresponding event to event store`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorSchemeCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorScheme(request = any()) } returns Result.Success(value = someDomainColorScheme())
@@ -411,7 +414,7 @@ class ColorSchemeViewModelTest {
 
     fun createSut(
         createData: CreateColorSchemeDataUseCase = createDataMock,
-        coroutineDispatcher: CoroutineDispatcher = mainDispatcherRule.testDispatcher,
+        coroutineDispatcher: CoroutineDispatcher = testDispatcher,
     ) =
         ColorSchemeViewModel(
             coroutineScope = CoroutineScope(context = coroutineDispatcher),

@@ -6,17 +6,18 @@ import io.github.mmolosay.thecolor.domain.result.HttpFailure
 import io.github.mmolosay.thecolor.domain.result.Result
 import io.github.mmolosay.thecolor.domain.usecase.GetColorDetailsUseCase
 import io.github.mmolosay.thecolor.presentation.api.ColorToColorIntUseCase
-import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel.DataState
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsCommand
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsCommandProvider
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsData
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsError
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsEvent
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsEventStore
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel
+import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorDetailsViewModel.DataState
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.ColorRole
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.CreateColorDetailsDataUseCase
 import io.github.mmolosay.thecolor.presentation.details.viewmodel.CreateSeedDataUseCase
-import io.github.mmolosay.thecolor.testing.MainDispatcherRule
+import io.github.mmolosay.thecolor.testing.MainDispatcherExtension
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -32,14 +33,16 @@ import io.mockk.runs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
 /**
  * In most cases SUT ViewModel will use mocked instance of [CreateColorDetailsDataUseCase].
@@ -51,11 +54,11 @@ import org.junit.Test
  * This approach produces data as if it was in production, meaning that contents are plausible
  * and appropriate for tests that verify values.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
+@ExtendWith(MainDispatcherExtension::class)
 class ColorDetailsViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
-
+    val testDispatcher = UnconfinedTestDispatcher()
     val commandProvider: ColorDetailsCommandProvider = mockk()
     val eventStore: ColorDetailsEventStore = mockk {
         coEvery { send(event = any()) } just runs
@@ -83,7 +86,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command results in emission of Ready state`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val color = Color.Hex(0x1A803F)
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
@@ -106,7 +109,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command results in emission of Loading state`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val color = mockk<Color.Hex>()
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
@@ -135,7 +138,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command results in emission of Error state`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val color = Color.Hex(0x1A803F)
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
@@ -151,7 +154,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command results in emmision of seed color data`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val color = mockk<Color.Hex>()
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
@@ -174,7 +177,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `emission of 'fetch data' command cancells previous 'fetch data' job, so that repository is only accessed once`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             val fetchedDetails: ColorDetails = mockk(relaxed = true)
@@ -222,7 +225,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `emission of 'set color details' command results in emmision of seed color data`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(value = mockk())
@@ -245,7 +248,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `invoking 'go to exact color' sends appropriate event to color details event store`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val color = Color.Hex(0x1A803F)
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
@@ -281,7 +284,7 @@ class ColorDetailsViewModelTest {
      */
     @Test
     fun `emission of 'fetch data' command with color type 'exact' results in present initial color data`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val initialColor = Color.Hex(0x1A803F)
             val exactColor = Color.Hex(0x123456)
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
@@ -321,7 +324,7 @@ class ColorDetailsViewModelTest {
      */
     @Test
     fun `emission of 'fetch data' command with color type 'exact' results in present initial color data with correct color value`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val initialColor = Color.Hex(0x1A803F)
             val initialColorInt = io.github.mmolosay.thecolor.presentation.api.ColorInt(0x1A803F)
             val exactColor = Color.Hex(0x123456)
@@ -362,7 +365,7 @@ class ColorDetailsViewModelTest {
      */
     @Test
     fun `invoking 'go to initial color' sends appropriate event to color details event store`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val initialColor = Color.Hex(0x1A803F)
             val initialColorInt = io.github.mmolosay.thecolor.presentation.api.ColorInt(0x1A803F)
             val exactColor = Color.Hex(0x123456)
@@ -414,7 +417,7 @@ class ColorDetailsViewModelTest {
      */
     @Test
     fun `emission of 'fetch data' command that triggers failing data fetching results in emission of 'DataState Error'`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorDetails(color = any()) } returns
@@ -445,7 +448,7 @@ class ColorDetailsViewModelTest {
      */
     @Test
     fun `invoking 'try again' action of 'DataState Error' will use color from last 'fetch data' command`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             fun mockGetColorDetailsReturnsSuccess() {
                 val fetchedDetails: ColorDetails = mockk(relaxed = true) {
                     every { this@mockk.color } returns Color.Hex(0x000000) // doesn't matter
@@ -492,7 +495,7 @@ class ColorDetailsViewModelTest {
 
     @Test
     fun `emission of 'set color details' command results in emission of Ready state`() =
-        runTest(mainDispatcherRule.testDispatcher) {
+        runTest(testDispatcher) {
             val commandFlow = MutableSharedFlow<ColorDetailsCommand>()
             every { commandProvider.commandFlow } returns commandFlow
             coEvery { getColorDetails.invoke(any<Color>()) } returns Result.Success(value = mockk())
@@ -515,7 +518,7 @@ class ColorDetailsViewModelTest {
 
     fun createSut(
         createData: CreateColorDetailsDataUseCase = createDataMock,
-        coroutineDispatcher: CoroutineDispatcher = mainDispatcherRule.testDispatcher,
+        coroutineDispatcher: CoroutineDispatcher = testDispatcher,
     ) =
         ColorDetailsViewModel(
             coroutineScope = CoroutineScope(context = coroutineDispatcher),
