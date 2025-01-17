@@ -129,9 +129,11 @@ Allows to select a type of color input to be selected by default (on app startup
 #### UI theme
 A color scheme of the application. The options are:
 
+ - Auto. Resolves into either Light or Dark depending on the device's Dark mode setting.
  - Light, always, irregarding of device's Dark mode setting.
  - Dark, always, irregarding of device's Dark mode setting.
- - Auto. Resolves into either Light or Dark depending on the device's Dark mode setting.
+ - Jungle. Always light, irregarding of device's Dark mode setting.
+ - Midnight. Always dark, irregarding of device's Dark mode setting.
 
 ### Dynamic colors for UI theme
 Computes color schemes of some UI themes based on user's device wallpaper in the launcher.
